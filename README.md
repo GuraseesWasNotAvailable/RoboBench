@@ -63,5 +63,30 @@ Simulation: NVIDIA Isaac Sim 5.1, task `Isaac-PickPlace-RedBlock-G129-Dex1-Joint
 
 ---
 
-This repository hosts the published report only. The evaluation harness and raw per-episode data
-are kept separately.
+## Site structure
+
+| Page | What it is |
+|---|---|
+| `index.html` | Landing page — global leaderboard + the updates feed |
+| `methodology.html` | How we benchmark: embodiment, task, budget, scoring, statistics |
+| `about.html` | What we do: why it exists, model selection, principles, roadmap |
+| `report.html` | The full phase-0b report with all charts |
+| `assets/style.css` | Shared styling for every page |
+
+## Editing
+
+**To post an update**, open `index.html`, find the `ADD AN UPDATE` comment in the Latest updates
+section, copy the `<div class="item new">` block directly beneath it, and paste your new entry at
+the top of the feed. Remove the word `new` from the previous top entry's class so only the newest
+one is highlighted. Tags available: `result`, `model`, `method`.
+
+**To add a model**, open `index.html`, find the `ADD A MODEL` comment in the leaderboard, copy a
+`<tr>` row and edit the values. Keep rows in score order. If a new model's margin overlaps an
+existing one, give them the same `=n` rank rather than inventing an order.
+
+Then commit and push — GitHub Pages redeploys in about a minute.
+
+---
+
+This repository hosts the published site. The evaluation harness and raw per-episode data are kept
+separately.

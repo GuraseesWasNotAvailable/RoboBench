@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>What we do — RoboBench</title>
+<meta name="description" content="Why RoboBench exists, how models are selected, the principles behind it, and what is coming next.">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div class="wrap">
+
+  <nav class="nav">
+    <a class="brand" href="index.html">RoboBench</a>
+    <a class="l" href="index.html">Leaderboard</a>
+    <a class="l" href="methodology.html">How we benchmark</a>
+    <a class="l" href="about.html" aria-current="page">What we do</a>
+    <a class="l" href="report.html">Full report</a>
+  </nav>
+
+  <header>
+    <div class="kicker">About</div>
+    <h1>What we do</h1>
+    <p class="standfirst">There are dozens of open-source robot policies and almost no way to compare them. Each is published on its own robot, its own task and its own training budget. RoboBench exists to remove those variables and report what is left — including when the answer is "these models are indistinguishable".</p>
+  </header>
+
+  <section>
+    <h2>The problem</h2>
+    <p class="body">Suppose you want to pick a policy for a humanoid. The literature offers success rates from 30% to 90% — measured on different arms, different objects, different demonstration counts, different episode limits, and often with per-model tuning. None of those numbers can be placed side by side. A model reporting 85% may simply have had an easier task.</p>
+    <p class="body">The gap is not more models or bigger models. It is a <b>controlled comparison</b>: fix everything except the policy, and publish the rollouts so anyone can check.</p>
+  </section>
+
+  <section>
+    <h2>How we choose models</h2>
+    <p class="body">Entrants are selected by real-world adoption rather than novelty — GitHub stars, Hugging Face downloads over the trailing 30 days, and use as a baseline in published work. The aim is to benchmark what people actually deploy.</p>
+    <p class="body">Every cohort also includes a <b>from-scratch control</b>: a small policy with no pre-training whatsoever, learning only from the task's own demonstrations. It is not a contestant. It exists to answer the question every pre-trained model implicitly claims to have settled — <i>did the pre-training help?</i> On the current task, for three of four models, it did not.</p>
+    <div class="grid">
+      <div class="card">
+        <h4>Popularity, not novelty</h4>
+        <p>Stars, downloads, and baseline usage in papers. We benchmark what people run, not what published most recently.</p>
+      </div>
+      <div class="card">
+        <h4>Open weights only</h4>
+        <p>Every entrant must be independently runnable. Results nobody can reproduce are not results.</p>
+      </div>
+      <div class="card">
+        <h4>Always a control</h4>
+        <p>A from-scratch baseline in every cohort, so "did pre-training help?" is answered rather than assumed.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Principles</h2>
+    <ul class="body">
+      <li><b>One body, one budget.</b> Same robot, same demonstrations, same steps, same seeds, same clock. If a comparison is not equal it is not published — an early result was thrown out and re-run for giving one model 25% less time than the others.</li>
+      <li><b>Error bars on everything.</b> A benchmark without margins invites ranking noise. Where models are statistically tied we show them tied, even though a clean 1-2-3-4-5 would read better.</li>
+      <li><b>Publish the failures.</b> The most useful finding so far — that one model reaches the target and then carries the block away again — came from logged trajectories of unsuccessful episodes, not from the scoreboard.</li>
+      <li><b>State the home advantage.</b> A model pre-trained on this robot's body has a structural edge. It is marked ⚑ rather than quietly enjoyed.</li>
+      <li><b>No manufactured spread.</b> Charts are not stretched, truncated or normalised to make results look more decisive than they are.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>What we have found so far</h2>
+    <div class="grid">
+      <div class="card">
+        <div class="big">100%</div>
+        <h4>Grasping is solved</h4>
+        <p>All 750 attempts picked the block up. Not one model has any difficulty with the part that looks hardest.</p>
+      </div>
+      <div class="card">
+        <div class="big">9</div>
+        <h4>Placing is not</h4>
+        <p>Nine successful placements in 750 attempts. The entire difficulty lives in the last few centimetres.</p>
+      </div>
+      <div class="card">
+        <div class="big">3 / 4</div>
+        <h4>Pre-training underperformed</h4>
+        <p>Three of four pre-trained models scored at or below a 52M baseline with no pre-training at all.</p>
+      </div>
+    </div>
+    <div class="call">
+      <b>The most useful result is a negative one.</b> Generic robot pre-training bought nothing measurable on this task; only body-matched pre-training did. That is a narrow claim — this is one task on one robot, and nothing here tests generalisation, which is what pre-training is really for. But it is a claim the field currently has very little controlled evidence for in either direction.
+    </div>
+    <a class="cta" href="report.html">Read the full report →</a>
+  </section>
+
+  <section>
+    <h2>Roadmap</h2>
+    <div class="tbl">
+      <table>
+        <tr><th>Stage</th><th>Scope</th><th>Status</th></tr>
+        <tr><td class="name">Phase 0</td><td>Harness, scoring, one pick-and-place task, five policies</td><td>Complete — 250 rollouts</td></tr>
+        <tr><td class="name">Phase 0b</td><td>Continuous scoring, 150 episodes/policy, uniform horizon</td><td>Complete — 750 rollouts</td></tr>
+        <tr><td class="name">Phase 1</td><td>Four further task categories: articulated objects, tool use, multi-step sequences, language-conditioned variation</td><td>Designed, not started</td></tr>
+        <tr><td class="name">Ongoing</td><td>New models added as they reach the popularity threshold</td><td>Rolling</td></tr>
+      </table>
+    </div>
+    <p class="body">Phase 1 matters most. A single task cannot support a general claim, and the current one has a known weakness: it saturates at both ends, which limits how far apart any scoring rule can place the field.</p>
+  </section>
+
+  <section>
+    <h2>Caveats we will keep repeating</h2>
+    <p class="body">Simulation only — no physical robot has been involved, and nothing here demonstrates real-world behaviour. One task, one embodiment. GR00T's lead is on a body it was pre-trained for. Modest adaptation budget; with far more data the ordering could change. These are not fine print, they are the boundary of what the numbers mean.</p>
+  </section>
+
+  <footer>
+    <b>RoboBench</b> is an independent benchmark, unaffiliated with any of the labs whose models it evaluates.
+    <div class="meta">
+      Results and method changes are posted on the <a href="index.html">leaderboard page</a>.<br>
+      Protocol in full: <a href="methodology.html">How we benchmark</a>.
+    </div>
+  </footer>
+
+</div>
+</body>
+</html>

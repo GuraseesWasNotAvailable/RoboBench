@@ -3,627 +3,159 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Five Robot Brains, One Body</title>
-<style>
-  :root{
-    --bg:#0E1116;
-    --panel:#161A21;
-    --panel-2:#1C212A;
-    --line:#262C36;
-    --line-soft:#1E242D;
-    --text:#E6E9EE;
-    --dim:#868F9D;
-    --dimmer:#5A6472;
-    --signal:#E8A33D;
-    --ok:#5FB49C;
-    --mid:#5B7089;
-    --bad:#C4635C;
-    --mono:ui-monospace,"SF Mono","Cascadia Mono","Roboto Mono",Consolas,monospace;
-    --sans:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-  }
-  @media (prefers-color-scheme: light){
-    :root{
-      --bg:#F7F7F5; --panel:#FFFFFF; --panel-2:#F1F2F0; --line:#DCDEDA; --line-soft:#E7E8E5;
-      --text:#14181D; --dim:#5D6672; --dimmer:#8A93A0;
-      --signal:#B87516; --ok:#2F7F6B; --mid:#5B7089; --bad:#A8453E;
-    }
-  }
-  :root[data-theme="dark"]{
-    --bg:#0E1116; --panel:#161A21; --panel-2:#1C212A; --line:#262C36; --line-soft:#1E242D;
-    --text:#E6E9EE; --dim:#868F9D; --dimmer:#5A6472;
-    --signal:#E8A33D; --ok:#5FB49C; --mid:#5B7089; --bad:#C4635C;
-  }
-  :root[data-theme="light"]{
-    --bg:#F7F7F5; --panel:#FFFFFF; --panel-2:#F1F2F0; --line:#DCDEDA; --line-soft:#E7E8E5;
-    --text:#14181D; --dim:#5D6672; --dimmer:#8A93A0;
-    --signal:#B87516; --ok:#2F7F6B; --mid:#5B7089; --bad:#A8453E;
-  }
-
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{
-    background:var(--bg);color:var(--text);font-family:var(--sans);
-    -webkit-font-smoothing:antialiased;line-height:1.6;
-    padding:0 24px 80px;
-  }
-  .wrap{max-width:820px;margin:0 auto}
-
-  /* ---------- header ---------- */
-  header{padding:56px 0 30px;border-bottom:1px solid var(--line)}
-  .kicker{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--signal)}
-  h1{font-size:clamp(30px,5vw,44px);line-height:1.06;letter-spacing:-.028em;font-weight:800;margin-top:14px;text-wrap:balance}
-  .standfirst{color:var(--dim);font-size:16px;margin-top:16px;max-width:62ch}
-  .standfirst b{color:var(--text);font-weight:600}
-
-  /* headline stat strip */
-  .strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--line);
-         border:1px solid var(--line);border-radius:4px;margin-top:32px;overflow:hidden}
-  .stat{background:var(--panel);padding:16px 18px}
-  .stat .n{font-family:var(--mono);font-size:26px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
-  .stat .k{font-size:11.5px;color:var(--dim);margin-top:5px;line-height:1.4}
-  .n.sig{color:var(--signal)} .n.ok{color:var(--ok)} .n.bad{color:var(--bad)}
-
-  /* ---------- sections ---------- */
-  section{padding:44px 0;border-bottom:1px solid var(--line-soft)}
-  section:last-of-type{border-bottom:0}
-  h2{font-size:23px;letter-spacing:-.018em;font-weight:700;text-wrap:balance}
-  .lede{color:var(--dim);font-size:15px;margin-top:10px;max-width:64ch}
-  .lede b{color:var(--text);font-weight:600}
-
-  /* ---------- lollipop rows: one model per row, shared axis ---------- */
-  .plot{margin-top:30px;background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:24px 26px 14px}
-  .lrow{display:grid;grid-template-columns:104px 1fr 96px;gap:16px;align-items:center;padding:9px 0}
-  .lname{font-size:13.5px;font-weight:600;text-align:right;white-space:nowrap}
-  .lname i{display:block;font-style:normal;font-family:var(--mono);font-size:10px;color:var(--dimmer);margin-top:2px}
-  .ltrack{position:relative;height:20px}
-  .ltrack .g{position:absolute;top:0;bottom:0;width:1px;background:var(--line-soft)}
-  .ltrack .stem{position:absolute;top:50%;left:0;height:1px;background:var(--line);transform:translateY(-50%)}
-  .ltrack .dot{position:absolute;top:50%;width:12px;height:12px;border-radius:50%;background:var(--mid);
-               transform:translate(-50%,-50%);outline:3px solid var(--panel)}
-  .ltrack .dot.hero{width:16px;height:16px;background:var(--signal)}
-  .ltrack .dot.base{background:var(--text)}
-  .lval{font-family:var(--mono);font-size:14px;font-weight:600;font-variant-numeric:tabular-nums;color:var(--dim)}
-  .lval.hero{color:var(--signal)} .lval.base{color:var(--text)}
-  .lval em{display:block;font-style:normal;font-size:10px;color:var(--dimmer);letter-spacing:.02em;margin-top:2px}
-  .laxis{display:grid;grid-template-columns:104px 1fr 96px;gap:16px;margin-top:6px}
-  .laxis .t{position:relative;height:24px;font-family:var(--mono);font-size:10.5px;color:var(--dimmer)}
-  .laxis .t b{position:absolute;transform:translateX(-50%);font-weight:400}
-  .tiegroup{display:grid;grid-template-columns:104px 1fr 96px;gap:16px;margin-top:2px}
-  .tienote{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--dimmer);
-           border-left:2px solid var(--line);padding-left:10px}
-
-  /* ---------- bar rows ---------- */
-  .bars{margin-top:28px;background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:22px 26px 14px}
-  .brow{display:grid;grid-template-columns:118px 1fr;gap:18px;align-items:center;padding:11px 0;border-bottom:1px solid var(--line-soft)}
-  .brow:last-of-type{border-bottom:0}
-  .blab{font-size:13px;font-weight:600;text-align:right}
-  .blab i{display:block;font-style:normal;font-family:var(--mono);font-size:10.5px;color:var(--dimmer);margin-top:3px;letter-spacing:.02em}
-  .stack{position:relative;display:flex;flex-direction:column;gap:5px}
-  .sgrid{position:absolute;inset:0}
-  .sgrid i{position:absolute;top:0;bottom:0;width:1px;background:var(--line-soft)}
-  .b{position:relative;height:16px;display:flex;align-items:center;gap:9px}
-  .b em{height:100%;border-radius:1px;font-style:normal;min-width:2px}
-  .b b{font-family:var(--mono);font-size:11.5px;font-weight:600;color:var(--dim);font-variant-numeric:tabular-nums}
-  .f-ok{background:var(--ok)} .f-mid{background:var(--mid)} .f-bad{background:var(--bad)} .f-sig{background:var(--signal)}
-  .f-txt{background:var(--text)}
-  /* one colour per model, held constant across every chart in this report */
-  .f-groot{background:#4478d0} .f-act{background:#2b8a2b}
-  .f-smol{background:#9d9d97} .f-wall{background:#c2c2ba} .f-pi{background:#82827c}
-  .legend{display:flex;gap:20px;flex-wrap:wrap;margin-top:14px;padding-top:14px;border-top:1px solid var(--line-soft);
-          font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--dimmer)}
-  .legend i{display:inline-block;width:9px;height:9px;border-radius:1px;margin-right:7px;vertical-align:0}
-
-  /* ---------- table ---------- */
-  .tbl{margin-top:28px;overflow-x:auto;border:1px solid var(--line);border-radius:4px;background:var(--panel)}
-  table{width:100%;border-collapse:collapse;font-size:13.5px}
-  th{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--dimmer);
-     text-align:left;padding:13px 16px;border-bottom:1px solid var(--line);font-weight:500;white-space:nowrap}
-  td{padding:13px 16px;border-bottom:1px solid var(--line-soft);color:var(--dim);white-space:nowrap}
-  tr:last-child td{border-bottom:0}
-  td.m{font-family:var(--mono);font-variant-numeric:tabular-nums}
-  td.name{color:var(--text);font-weight:600}
-
-  /* ---------- callout ---------- */
-  .call{margin-top:26px;padding:20px 22px;background:var(--panel);border:1px solid var(--line);
-        border-left:2px solid var(--signal);border-radius:3px;font-size:14.5px;color:var(--dim)}
-  .call b{color:var(--text);font-weight:650}
-  .call + .call{margin-top:12px}
-  .cap{font-family:var(--mono);font-size:10.5px;color:var(--dimmer);margin-top:12px;letter-spacing:.02em}
-
-  .chip{display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;
-        padding:2px 7px;border-radius:2px;border:1px solid var(--line);color:var(--dim);margin-left:8px;vertical-align:1.5px}
-  .chip.sig{color:var(--signal);border-color:var(--signal)}
-
-  footer{padding:40px 0 0;border-top:1px solid var(--line);color:var(--dim);font-size:14.5px}
-  footer b{color:var(--text)}
-  .meta{font-family:var(--mono);font-size:11px;color:var(--dimmer);margin-top:22px;line-height:1.8;letter-spacing:.01em}
-</style>
+<title>RoboBench — an open benchmark for robot policies</title>
+<meta name="description" content="Standardised, auditable benchmarking of open-source vision-language-action robot policies on a single embodiment.">
+<link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
 <div class="wrap">
 
-  <header>
-    <div class="kicker">PAI-Bench · Phase 0b · 21 Jul 2026</div>
-    <h1>Five robot brains, one body</h1>
-    <p class="standfirst">We took five of the most popular <b>open-source AI models for controlling robots</b>, put each one in charge of the same humanoid, and gave them the same job: <b>pick up a block and set it down on a target</b>. Identical training, 150 attempts each — 750 in total. Almost none of them could finish.</p>
+  <nav class="nav">
+    <a class="brand" href="index.html">RoboBench</a>
+    <a class="l" href="index.html" aria-current="page">Leaderboard</a>
+    <a class="l" href="methodology.html">How we benchmark</a>
+    <a class="l" href="about.html">What we do</a>
+    <a class="l" href="report.html">Full report</a>
+  </nav>
 
-    <div class="strip">
-      <div class="stat"><div class="n ok">100%</div><div class="k">picked the block up<br>every model, every attempt</div></div>
-      <div class="stat"><div class="n sig">9</div><div class="k">successful placements<br>out of 750 attempts</div></div>
-      <div class="stat"><div class="n">2</div><div class="k">blocks ever put back down<br>out of 741 failures</div></div>
-      <div class="stat"><div class="n bad">2.8</div><div class="k">points separating 4 of 5<br>including one with no pre-training</div></div>
-    </div>
+  <header>
+    <div class="kicker">Open benchmark · updated 21 Jul 2026</div>
+    <h1>One robot body. Every policy. Same rules.</h1>
+    <p class="standfirst">Open-source robot policies are published on different robots, different tasks and different training budgets, which makes them nearly impossible to compare. RoboBench puts them all in charge of the <b>same humanoid</b>, on the <b>same task</b>, with an <b>identical adaptation budget</b>, and scores them from auditable simulated rollouts.</p>
   </header>
 
   <section>
-    <h2>The four pre-trained models</h2>
-    <p class="lede">Finishing outright was so rare that a pass/fail number tells you nothing. So we score <b>how close the block actually got to the target</b> on each attempt, where 100 would mean placed. The thin line through each bar is the <b>margin of error</b>: run the same model again and the score lands somewhere in that window. <b>Where those lines overlap, the models are tied.</b></p>
+    <h2>Global leaderboard</h2>
+    <p class="lede">Score is <b>placement progress</b>: how much of the block's starting distance to the target was closed, 0–100, where 100 means placed. Continuous rather than pass/fail, because outright success is still too rare to rank on. Every figure carries a 95% margin — <b>where margins overlap, models are tied and shown as tied</b>.</p>
 
-    <div style="margin:26px 0 8px">
-      <svg viewBox="0 0 700 216" style="width:100%;height:auto" role="img" aria-label="Bar chart with error bars. GR00T scores 36.2, SmolVLA 23.9, WALL-OSS 23.7, pi-0.5 22.9, each with a 95 percent range.">
-        <g stroke="var(--line-soft)" stroke-width="1">
-          <line x1="254" y1="10" x2="254" y2="174"/><line x1="358" y1="10" x2="358" y2="174"/>
-          <line x1="462" y1="10" x2="462" y2="174"/><line x1="566" y1="10" x2="566" y2="174"/>
-          <line x1="670" y1="10" x2="670" y2="174"/>
-        </g>
-        <g font-family="var(--sans)" font-size="13">
-          <text x="140" y="35" text-anchor="end" fill="var(--text)">GR00T N1.7 3B</text>
-          <rect x="150" y="17" width="376.9" height="26" fill="#4478d0"/>
-          <line x1="481.9" y1="30" x2="571.9" y2="30" stroke="var(--dim)" stroke-width="1.5"/>
-          <line x1="481.9" y1="23" x2="481.9" y2="37" stroke="var(--dim)" stroke-width="1.5"/>
-          <line x1="571.9" y1="23" x2="571.9" y2="37" stroke="var(--dim)" stroke-width="1.5"/>
-          <text x="584" y="35" font-size="12.5" fill="var(--text)" font-family="var(--mono)">36.2</text>
-
-          <text x="140" y="75" text-anchor="end" fill="var(--dim)">SmolVLA 450M</text>
-          <rect x="150" y="57" width="248.4" height="26" fill="#9d9d97"/>
-          <line x1="368.7" y1="70" x2="428.0" y2="70" stroke="var(--dim)" stroke-width="1.5"/>
-          <line x1="368.7" y1="63" x2="368.7" y2="77" stroke="var(--dim)" stroke-width="1.5"/>
-          <line x1="428.0" y1="63" x2="428.0" y2="77" stroke="var(--dim)" stroke-width="1.5"/>
-          <text x="440" y="75" font-size="12.5" fill="var(--dim)" font-family="var(--mono)">23.9</text>
-
-          <text x="140" y="115" text-anchor="end" fill="var(--dim)">WALL-OSS</text>
-          <rect x="150" y="97" width="246.6" height="26" fill="#c2c2ba"/>
-          <line x1="365.7" y1="110" x2="427.5" y2="110" stroke="var(--dim)" stroke-width="1.5"/>
-          <line x1="365.7" y1="103" x2="365.7" y2="117" stroke="var(--dim)" stroke-width="1.5"/>
-          <line x1="427.5" y1="103" x2="427.5" y2="117" stroke="var(--dim)" stroke-width="1.5"/>
-          <text x="440" y="115" font-size="12.5" fill="var(--dim)" font-family="var(--mono)">23.7</text>
-
-          <text x="140" y="155" text-anchor="end" fill="var(--dim)">π0.5 4.1B</text>
-          <rect x="150" y="137" width="237.6" height="26" fill="#82827c"/>
-          <line x1="358.6" y1="150" x2="416.7" y2="150" stroke="var(--dim)" stroke-width="1.5"/>
-          <line x1="358.6" y1="143" x2="358.6" y2="157" stroke="var(--dim)" stroke-width="1.5"/>
-          <line x1="416.7" y1="143" x2="416.7" y2="157" stroke="var(--dim)" stroke-width="1.5"/>
-          <text x="429" y="155" font-size="12.5" fill="var(--dim)" font-family="var(--mono)">22.9</text>
-        </g>
-        <line x1="150" y1="174" x2="670" y2="174" stroke="var(--line)" stroke-width="1"/>
-        <g font-family="var(--mono)" font-size="11" fill="var(--dimmer)" text-anchor="middle">
-          <text x="150" y="193">0</text><text x="254" y="193">10</text><text x="358" y="193">20</text>
-          <text x="462" y="193">30</text><text x="566" y="193">40</text><text x="670" y="193">50</text>
-          <text x="410" y="211" fill="var(--dim)">PLACEMENT SCORE &middot; 95% RANGE &middot; n = 150 EACH</text>
-        </g>
-      </svg>
-    </div>
-
-    <div class="call">
-      <b>One clear winner, three genuinely equal.</b> GR00T leads by about 12 points — comfortably outside the margins, so that gap is real. The other three sit within <b>1.0 point</b> of each other with margins of ±3: a 4.1-billion-parameter model and a 450-million one, indistinguishable. That is not the measurement failing to tell them apart. With 150 attempts each we can resolve gaps of about 4 points, and there is no gap to find. Note also how far from solved this is — the leader closes barely a third of the distance.
-    </div>
-  </section>
-
-  <section>
-    <h2>Now add a model that never saw another robot</h2>
-    <p class="lede">ACT is our control. It has <b>52 million parameters</b> — 80× smaller than π0.5 — and <b>no pre-training whatsoever</b>. It never saw a robot dataset, a video corpus, or another machine. It learned this task from our 216 demonstrations and nothing else. Here is the same chart with it dropped in.</p>
-
-    <div style="margin:26px 0 8px">
-      <svg viewBox="0 0 700 256" style="width:100%;height:auto" role="img" aria-label="Bar chart with error bars including the control. GR00T 36.2, ACT control 25.6, SmolVLA 23.9, WALL-OSS 23.7, pi-0.5 22.9. The control ranks second.">
-        <g stroke="var(--line-soft)" stroke-width="1">
-          <line x1="254" y1="10" x2="254" y2="214"/><line x1="358" y1="10" x2="358" y2="214"/>
-          <line x1="462" y1="10" x2="462" y2="214"/><line x1="566" y1="10" x2="566" y2="214"/>
-          <line x1="670" y1="10" x2="670" y2="214"/>
-        </g>
-        <g font-family="var(--sans)" font-size="13">
-          <text x="140" y="35" text-anchor="end" fill="var(--text)">GR00T N1.7 3B</text>
-          <rect x="150" y="17" width="376.9" height="26" fill="#4478d0"/>
-          <line x1="481.9" y1="30" x2="571.9" y2="30" stroke="var(--dim)" stroke-width="1.5"/>
-          <line x1="481.9" y1="23" x2="481.9" y2="37" stroke="var(--dim)" stroke-width="1.5"/>
-          <line x1="571.9" y1="23" x2="571.9" y2="37" stroke="var(--dim)" stroke-width="1.5"/>
-          <text x="584" y="35" font-size="12.5" fill="var(--text)" font-family="var(--mono)">36.2</text>
-
-          <text x="140" y="75" text-anchor="end" fill="var(--text)">ACT control</text>
-          <rect x="150" y="57" width="266.4" height="26" fill="#2b8a2b"/>
-          <line x1="383.7" y1="70" x2="449.2" y2="70" stroke="var(--dim)" stroke-width="1.5"/>
-          <line x1="383.7" y1="63" x2="383.7" y2="77" stroke="var(--dim)" stroke-width="1.5"/>
-          <line x1="449.2" y1="63" x2="449.2" y2="77" stroke="var(--dim)" stroke-width="1.5"/>
-          <text x="461" y="75" font-size="12.5" fill="var(--text)" font-family="var(--mono)">25.6</text>
-
-          <text x="140" y="115" text-anchor="end" fill="var(--dim)">SmolVLA 450M</text>
-          <rect x="150" y="97" width="248.4" height="26" fill="#9d9d97"/>
-          <line x1="368.7" y1="110" x2="428.0" y2="110" stroke="var(--dim)" stroke-width="1.5"/>
-          <line x1="368.7" y1="103" x2="368.7" y2="117" stroke="var(--dim)" stroke-width="1.5"/>
-          <line x1="428.0" y1="103" x2="428.0" y2="117" stroke="var(--dim)" stroke-width="1.5"/>
-          <text x="440" y="115" font-size="12.5" fill="var(--dim)" font-family="var(--mono)">23.9</text>
-
-          <text x="140" y="155" text-anchor="end" fill="var(--dim)">WALL-OSS</text>
-          <rect x="150" y="137" width="246.6" height="26" fill="#c2c2ba"/>
-          <line x1="365.7" y1="150" x2="427.5" y2="150" stroke="var(--dim)" stroke-width="1.5"/>
-          <line x1="365.7" y1="143" x2="365.7" y2="157" stroke="var(--dim)" stroke-width="1.5"/>
-          <line x1="427.5" y1="143" x2="427.5" y2="157" stroke="var(--dim)" stroke-width="1.5"/>
-          <text x="440" y="155" font-size="12.5" fill="var(--dim)" font-family="var(--mono)">23.7</text>
-
-          <text x="140" y="195" text-anchor="end" fill="var(--dim)">π0.5 4.1B</text>
-          <rect x="150" y="177" width="237.6" height="26" fill="#82827c"/>
-          <line x1="358.6" y1="190" x2="416.7" y2="190" stroke="var(--dim)" stroke-width="1.5"/>
-          <line x1="358.6" y1="183" x2="358.6" y2="197" stroke="var(--dim)" stroke-width="1.5"/>
-          <line x1="416.7" y1="183" x2="416.7" y2="197" stroke="var(--dim)" stroke-width="1.5"/>
-          <text x="429" y="195" font-size="12.5" fill="var(--dim)" font-family="var(--mono)">22.9</text>
-        </g>
-        <line x1="150" y1="214" x2="670" y2="214" stroke="var(--line)" stroke-width="1"/>
-        <g font-family="var(--mono)" font-size="11" fill="var(--dimmer)" text-anchor="middle">
-          <text x="150" y="233">0</text><text x="254" y="233">10</text><text x="358" y="233">20</text>
-          <text x="462" y="233">30</text><text x="566" y="233">40</text><text x="670" y="233">50</text>
-          <text x="410" y="251" fill="var(--dim)">GREEN = THE CONTROL &middot; NO PRE-TRAINING, 80&times; SMALLER THAN THE LARGEST</text>
-        </g>
-      </svg>
-    </div>
-
-    <div class="call">
-      <b>It lands second.</b> The little model with no pre-training scores above <b>all three</b> of the other systems built on enormous robot datasets. Every advantage those models were supposed to bring — scale, data, months of GPU time — bought them nothing here.
-    </div>
-    <div class="call" style="border-left-color:var(--line)">
-      <b>How firm is that?</b> ACT's lead over the three pre-trained models is <b>1.7 to 2.8 points against margins of about ±4</b> — too small to call on its own. The honest claim is not "the small model wins" but the harder-to-dismiss one: <b>three of the four pre-trained models failed to beat a from-scratch baseline 80× smaller</b>, and all three land on the same side of it.
-    </div>
-
-    <h2 style="margin-top:38px;font-size:19px">Why would that happen?</h2>
-
-    <div class="call">
-      <b>1. ACT had no new body to learn.</b> The pre-trained models learned on <i>other</i> robots — different arms, different cameras, different proportions. Before any of that knowledge helps here, it has to be translated onto this humanoid. ACT skipped the translation entirely: this robot is the only one it has ever known. For a single narrow task, that head start roughly cancels out having read the whole robot library.
-    </div>
-    <div class="call">
-      <b>2. The task is small enough to learn outright.</b> 216 demonstrations of one motion is plenty for a 52M model to memorise. Pre-training pays off when you need to generalise — new objects, new instructions, new scenes. Nothing here asked for that, so the thing pre-training buys was never tested.
-    </div>
-    <div class="call">
-      <b>3. ACT plans in chunks and reacts faster.</b> It predicts a burst of upcoming movements at once rather than one step at a time, which limits the drift that accumulates when a robot acts on its own last action. It also ran at <b>29.3 decisions per second against GR00T's 19.8</b> — a smaller model checks the world more often and corrects sooner.
-    </div>
-    <div class="call">
-      <b>4. But note what ACT did not do.</b> It never once finished the task, and GR00T beat it clearly. So the honest reading isn't "small beats big" — it's that <b>generic pre-training bought nothing here, while body-matched pre-training did</b>. GR00T is the only model in this test that had already seen robots shaped like this one.
-    </div>
-  </section>
-
-  <section>
-    <h2>How sure are we?</h2>
-    <p class="lede">Every score is an estimate from 150 attempts, so each comes with a range. Below, the dot is the measured score and the bar through it is where the true value almost certainly sits. <b>If two ranges overlap, the models are tied</b> — the difference between them is smaller than our ability to measure it.</p>
-
-    <div style="margin:26px 0 8px">
-      <svg viewBox="0 0 700 232" style="width:100%;height:auto" role="img" aria-label="Dot plot of placement score with confidence ranges. GR00T at 36.2 sits clear of the control line; ACT, SmolVLA, WALL-OSS and pi-0.5 overlap heavily between 20 and 29.">
-        <line x1="314.7" y1="24" x2="314.7" y2="196" stroke="var(--dimmer)" stroke-width="1" stroke-dasharray="3 4"/>
-        <text x="318" y="20" font-size="11" fill="var(--dimmer)" font-family="var(--mono)">CONTROL</text>
-
-        <g font-family="var(--sans)" font-size="13">
-          <text x="140" y="45" text-anchor="end" fill="var(--text)">GR00T 3B</text>
-          <line x1="451.1" y1="40" x2="639.6" y2="40" stroke="#4478d0" stroke-width="1.5" opacity=".55"/>
-          <line x1="451.1" y1="33" x2="451.1" y2="47" stroke="#4478d0" stroke-width="1.5" opacity=".55"/>
-          <line x1="639.6" y1="33" x2="639.6" y2="47" stroke="#4478d0" stroke-width="1.5" opacity=".55"/>
-          <circle cx="545.3" cy="40" r="5.5" fill="#4478d0"/>
-          <text x="545.3" y="26" text-anchor="middle" font-size="12" fill="#4478d0" font-family="var(--mono)">36.2</text>
-
-          <text x="140" y="79" text-anchor="end" fill="var(--text)">ACT control</text>
-          <line x1="245.4" y1="74" x2="384.0" y2="74" stroke="#2b8a2b" stroke-width="1.5" opacity=".55"/>
-          <line x1="245.4" y1="67" x2="245.4" y2="81" stroke="#2b8a2b" stroke-width="1.5" opacity=".55"/>
-          <line x1="384.0" y1="67" x2="384.0" y2="81" stroke="#2b8a2b" stroke-width="1.5" opacity=".55"/>
-          <circle cx="314.7" cy="74" r="5.5" fill="#2b8a2b"/>
-          <text x="314.7" y="60" text-anchor="middle" font-size="12" fill="#2b8a2b" font-family="var(--mono)">25.6</text>
-
-          <text x="140" y="113" text-anchor="end" fill="var(--dim)">SmolVLA 450M</text>
-          <line x1="215.0" y1="108" x2="340.7" y2="108" stroke="var(--mid)" stroke-width="1.5" opacity=".55"/>
-          <line x1="215.0" y1="101" x2="215.0" y2="115" stroke="var(--mid)" stroke-width="1.5" opacity=".55"/>
-          <line x1="340.7" y1="101" x2="340.7" y2="115" stroke="var(--mid)" stroke-width="1.5" opacity=".55"/>
-          <circle cx="277.8" cy="108" r="5.5" fill="#9d9d97"/>
-
-          <text x="140" y="147" text-anchor="end" fill="var(--dim)">WALL-OSS</text>
-          <line x1="208.5" y1="142" x2="338.4" y2="142" stroke="var(--mid)" stroke-width="1.5" opacity=".55"/>
-          <line x1="208.5" y1="135" x2="208.5" y2="149" stroke="var(--mid)" stroke-width="1.5" opacity=".55"/>
-          <line x1="338.4" y1="135" x2="338.4" y2="149" stroke="var(--mid)" stroke-width="1.5" opacity=".55"/>
-          <circle cx="273.4" cy="142" r="5.5" fill="#c2c2ba"/>
-
-          <text x="140" y="181" text-anchor="end" fill="var(--dim)">π0.5 4.1B</text>
-          <line x1="195.5" y1="176" x2="316.8" y2="176" stroke="var(--mid)" stroke-width="1.5" opacity=".55"/>
-          <line x1="195.5" y1="169" x2="195.5" y2="183" stroke="var(--mid)" stroke-width="1.5" opacity=".55"/>
-          <line x1="316.8" y1="169" x2="316.8" y2="183" stroke="var(--mid)" stroke-width="1.5" opacity=".55"/>
-          <circle cx="256.1" cy="176" r="5.5" fill="#82827c"/>
-        </g>
-
-        <line x1="150" y1="200" x2="670" y2="200" stroke="var(--line)" stroke-width="1"/>
-        <g font-family="var(--mono)" font-size="11" fill="var(--dimmer)" text-anchor="middle">
-          <line x1="193.3" y1="200" x2="193.3" y2="205" stroke="var(--line)"/><text x="193.3" y="219">20</text>
-          <line x1="301.7" y1="200" x2="301.7" y2="205" stroke="var(--line)"/><text x="301.7" y="219">25</text>
-          <line x1="410" y1="200" x2="410" y2="205" stroke="var(--line)"/><text x="410" y="219">30</text>
-          <line x1="518.3" y1="200" x2="518.3" y2="205" stroke="var(--line)"/><text x="518.3" y="219">35</text>
-          <line x1="626.7" y1="200" x2="626.7" y2="205" stroke="var(--line)"/><text x="626.7" y="219">40</text>
-        </g>
-      </svg>
-      <div class="legend"><span>Placement score · dot = measured, bar = 95% range · axis starts at 18, not 0</span></div>
-    </div>
-
-    <div class="call">
-      <b>Only one gap survives.</b> GR00T's range clears everything else outright. The remaining four overlap so heavily they form a single blur — including a 4.1-billion-parameter model and a 52-million one with no pre-training. Placing them 2nd, 3rd, 4th and 5th would be inventing an order that the data does not contain.
-    </div>
-    <div class="call" style="border-left-color:var(--line)">
-      <b>A note on the two axis styles.</b> This chart starts at 18 rather than 0, which magnifies the differences — legitimate only because each value is read from the <i>position</i> of a dot. The bar charts above cannot do that: a bar's <i>length</i> encodes its number, so the axis must start at zero or the ratios break — cut it at 18 and 22.9 would look half of 36.2 rather than two-thirds. Their scale runs to 50 rather than 100, which is fine: moving the <i>top</i> of a bar axis rescales every bar equally and preserves the ratios, while moving the <i>bottom</i> off zero does not. Both pictures are true; this one is zoomed.
-    </div>
-  </section>
-
-  <section>
-    <h2>The job has three stages. Only one is hard.</h2>
-    <p class="lede">Those scores hide something important. Splitting them into the three stages shows the task doesn't get gradually harder — it hits a wall.</p>
-
-    <div class="tbl">
+    <div class="lb">
       <table>
-        <tr><th>Model</th><th>Pick up</th><th>Carry to target</th><th>Place accurately</th></tr>
-        <tr><td class="name">GR00T</td><td class="m" style="color:var(--ok)">100%</td><td class="m">72%</td><td class="m" style="color:var(--signal)">4.0%</td></tr>
-        <tr><td class="name">ACT</td><td class="m" style="color:var(--ok)">100%</td><td class="m">54%</td><td class="m">1.3%</td></tr>
-        <tr><td class="name">WALL-OSS</td><td class="m" style="color:var(--ok)">100%</td><td class="m">53%</td><td class="m">0.7%</td></tr>
-        <tr><td class="name">SmolVLA</td><td class="m" style="color:var(--ok)">100%</td><td class="m">51%</td><td class="m" style="color:var(--bad)">0%</td></tr>
-        <tr><td class="name">π0.5</td><td class="m" style="color:var(--ok)">100%</td><td class="m">51%</td><td class="m" style="color:var(--bad)">0%</td></tr>
+        <tr>
+          <th>#</th><th>Model</th><th>Params</th><th>Score</th><th>τ50</th>
+          <th>Success</th><th>Speed</th><th>Episodes</th>
+        </tr>
+
+        <!-- ═══ ADD A MODEL: copy one <tr> block, edit values, keep rows in score order ═══ -->
+        <tr class="lead">
+          <td class="rk">1</td>
+          <td class="nm"><span class="swatch" style="background:var(--groot)"></span>GR00T N1.7 ⚑<i>NVIDIA · humanoid-native</i></td>
+          <td class="m">3B</td>
+          <td class="m"><span class="sc">36.2</span><br><span class="ci">± 4.3</span></td>
+          <td class="m">3.93</td><td class="m">4.0%</td><td class="m">19.8/s</td><td class="m">150</td>
+        </tr>
+        <tr>
+          <td class="rk">—</td>
+          <td class="nm"><span class="swatch" style="background:var(--act)"></span>ACT<i>control · no pre-training</i></td>
+          <td class="m">52M</td>
+          <td class="m"><span class="sc">25.6</span><br><span class="ci">± 3.2</span></td>
+          <td class="m">4.44</td><td class="m">1.3%</td><td class="m">29.3/s</td><td class="m">150</td>
+        </tr>
+        <tr>
+          <td class="rk">=2</td>
+          <td class="nm"><span class="swatch" style="background:var(--g1)"></span>SmolVLA<i>Hugging Face</i></td>
+          <td class="m">450M</td>
+          <td class="m"><span class="sc">23.9</span><br><span class="ci">± 2.9</span></td>
+          <td class="m">4.68</td><td class="m">0%</td><td class="m">18.4/s</td><td class="m">150</td>
+        </tr>
+        <tr>
+          <td class="rk">=2</td>
+          <td class="nm"><span class="swatch" style="background:var(--g2)"></span>WALL-OSS<i>X Square Robot</i></td>
+          <td class="m">~4B</td>
+          <td class="m"><span class="sc">23.7</span><br><span class="ci">± 3.0</span></td>
+          <td class="m">4.78</td><td class="m">0.7%</td><td class="m">15.1/s</td><td class="m">150</td>
+        </tr>
+        <tr>
+          <td class="rk">=2</td>
+          <td class="nm"><span class="swatch" style="background:var(--g3)"></span>π0.5<i>Physical Intelligence</i></td>
+          <td class="m">4.1B</td>
+          <td class="m"><span class="sc">22.9</span><br><span class="ci">± 2.8</span></td>
+          <td class="m">4.77</td><td class="m">0%</td><td class="m">22.3/s</td><td class="m">150</td>
+        </tr>
+        <!-- ═══ END MODEL ROWS ═══ -->
       </table>
     </div>
 
+    <p class="tie" style="margin-top:14px">Three models share rank 2. Their margins overlap almost entirely — ranking them 2nd, 3rd and 4th would be reporting noise as a result.</p>
+
     <div class="call">
-      <b>A cliff, not a slope.</b> Picking up is solved — 100%, every model, every attempt. Carrying is a coin flip. Placing collapses to nothing. The entire difficulty lives in the last few centimetres: the target is <b>3.7 × 4.9 cm</b>, about a matchbox.
+      <b>⚑ GR00T has a home advantage.</b> It is the only entrant pre-trained on humanoids of this shape, so its lead means "best for this body", not "best in general". <b>ACT is the control</b>, not a contestant: 52M parameters, no pre-training at all, learning only from this task's 216 demonstrations. It is listed to show what the pre-trained models have to beat — and three of the four do not.
     </div>
-    <div class="call">
-      <b>And it fails sideways, not vertically.</b> We assumed the killer was height — the target is only 5 mm tall. It isn't. At their closest approach the models are <b>within 4 mm of the correct height</b> and about <b>11 cm off to the side</b>. They know how high to hold the block. They cannot get it over the right spot.
-    </div>
+
+    <a class="cta" href="report.html">Read the full phase-0b report →</a>
   </section>
 
   <section>
-    <h2>What failure actually looked like</h2>
-    <p class="lede">We logged every one of the 750 attempts step by step, recording where the block was at all times. That turns out to matter: the five models do <b>not</b> fail the same way.</p>
+    <h2>Latest updates</h2>
+    <p class="lede">Benchmark releases, new models entering the leaderboard, and changes to how we score.</p>
 
-    <div class="tbl">
-      <table>
-        <tr><th>Model</th><th>Ran out the clock</th><th>Time spent loitering near target</th><th>Ended up further out than its closest approach</th><th>Put the block back down</th></tr>
-        <tr><td class="name">GR00T</td><td class="m">144 / 150</td><td class="m" style="color:var(--signal)">25%</td><td class="m" style="color:var(--signal)">13 cm</td><td class="m">2 / 144</td></tr>
-        <tr><td class="name">ACT</td><td class="m">148 / 150</td><td class="m">52%</td><td class="m">0.5 cm</td><td style="color:var(--ok)">never</td></tr>
-        <tr><td class="name">SmolVLA</td><td class="m">150 / 150</td><td class="m">50%</td><td class="m">0.4 cm</td><td style="color:var(--ok)">never</td></tr>
-        <tr><td class="name">WALL-OSS</td><td class="m">149 / 150</td><td class="m">49%</td><td class="m">0.8 cm</td><td style="color:var(--ok)">never</td></tr>
-        <tr><td class="name">π0.5</td><td class="m">150 / 150</td><td class="m">48%</td><td class="m">0.1 cm</td><td style="color:var(--ok)">never</td></tr>
-      </table>
-    </div>
+    <div class="feed">
 
-    <div class="call">
-      <b>Three of them park. One drives past.</b> ACT, SmolVLA, π0.5 and WALL-OSS all do the same thing: carry the block to roughly the right area, stop, and hold it there — half the episode — until the clock expires. They finish within a centimetre of the closest they ever got. They know where to go and cannot decide when to let go.
-    </div>
-    <div class="call">
-      <b>GR00T fails differently, and more interestingly.</b> It makes the fastest and closest approach in the test — and then <b>carries the block about 13 cm back out again</b>, ending far from the best position it reached. It isn't loitering; it's overshooting. That is a <b>stopping problem, not a seeing problem</b>: the model that locates the target best is the one that can't halt on it. It is also the one case here where a crude fix — stop when close enough — might convert near-misses into successes.
-    </div>
-    <div class="call">
-      <b>Almost nobody fumbles.</b> In 741 failed attempts the block ended up back down on the surface just <b>twice</b>, both by GR00T. Every other failure finished with the robot still holding it. Nothing was knocked away or abandoned — the grasp is not the problem.
-    </div>
-    <div class="call">
-      <b>Success is fast or never.</b> The nine successes took <b>5.7 to 8.1 seconds</b> — a fraction of the time allowed. Nobody ever found success late by searching longer. These models commit to a motion and hope it lands; they don't home in.
-    </div>
-  </section>
+      <!-- ═══ ADD AN UPDATE ═══════════════════════════════════════════════════════
+           Copy the whole <div class="item new"> block below and paste it at the TOP
+           of this feed, then edit it. Remove the word "new" from the class on the
+           previous top entry so only the newest one is highlighted.
+           Tag options:  result  ·  model  ·  method
+           The <a class="more"> line is optional — delete it if there's nothing to link.
+           ═════════════════════════════════════════════════════════════════════════ -->
 
-  <section>
-    <h2>Why this happens</h2>
-    <p class="lede">All five learn the same way — by <b>copying human demonstrations</b>. That method has a known weak spot, and this task sits directly on it.</p>
-
-    <div class="call">
-      <b>The hardest moment is the rarest.</b> In every demonstration the robot spends seconds reaching and carrying, and a split second doing the precise release. A model that averages demonstrations learns the long easy parts well and the brief exacting part badly — exactly the pattern measured above.
-    </div>
-    <div class="call">
-      <b>Averaging destroys precision.</b> If demonstrations release the block at slightly different spots, the average release point can be somewhere no demonstration ever succeeded. Fine for carrying; useless for a matchbox.
-    </div>
-    <div class="call">
-      <b>Small errors compound.</b> The robot acts on the consequences of its own last action. Slight drift while carrying lands it in a situation no demonstration covered, with nothing teaching recovery — so it circles the target instead of correcting.
-    </div>
-  </section>
-
-  <section>
-    <h2>Training scores lied</h2>
-    <p class="lede">During training, models are graded on how closely they reproduce the demonstrations. Lower is supposed to be better. Set that against what actually happened:</p>
-
-    <div class="tbl">
-      <table>
-        <tr><th>Model</th><th>Size</th><th>Training error</th><th>Score</th><th>Real success</th></tr>
-        <tr><td class="name">π0.5</td><td class="m">4.1B</td><td class="m" style="color:var(--ok)">0.024 &nbsp;best by far</td><td class="m" style="color:var(--bad)">22.9 &nbsp;last</td><td class="m" style="color:var(--bad)">0 / 150</td></tr>
-        <tr><td class="name">ACT</td><td class="m">52M</td><td class="m">0.056</td><td class="m">25.6</td><td class="m">2 / 150</td></tr>
-        <tr><td class="name">GR00T</td><td class="m">3B</td><td class="m" style="color:var(--dimmer)">0.860 &nbsp;worst</td><td class="m" style="color:var(--signal)">36.2 &nbsp;best</td><td class="m" style="color:var(--signal)">6 / 150</td></tr>
-      </table>
-    </div>
-
-    <div class="call">
-      <b>The model that studied hardest did worst.</b> π0.5 reproduced the demonstrations roughly <b>35× more closely</b> than GR00T, then finished last on the real task and never once completed it. The relationship isn't merely weak — across these three it runs <b>backwards</b>. Copying examples well is not the same as being able to do the task, and anyone choosing a model by its training score here would have picked the worst one.
-    </div>
-  </section>
-
-  <section>
-    <h2>What the big models cost</h2>
-    <p class="lede">Size isn't free. A robot decides what to do next many times a second, and a bigger brain thinks slower. Measured on the same graphics card, during the actual runs:</p>
-
-    <div class="bars">
-      <div class="brow">
-        <div class="blab">ACT<i>52M</i></div>
-        <div class="stack">
-          <div class="sgrid"><i style="left:0%"></i><i style="left:25%"></i><i style="left:50%"></i><i style="left:75%"></i><i style="left:100%"></i></div>
-          <div class="b"><em class="f-act" style="width:97.7%"></em><b>29.3/s</b></div>
-        </div>
+      <div class="item new">
+        <span class="when">21 Jul 2026</span><span class="tag result">Result</span>
+        <h4>Phase 0b published — 750 rollouts, five policies</h4>
+        <p>150 episodes per policy on a uniform 600-step horizon. GR00T N1.7 is the only entrant to beat the from-scratch control (+10.6 ± 5.4). The other three are statistically tied with each other and sit at or below a 52M baseline with no pre-training at all.</p>
+        <a class="more" href="report.html">Read the report →</a>
       </div>
-      <div class="brow">
-        <div class="blab">π0.5<i>4.1B</i></div>
-        <div class="stack">
-          <div class="sgrid"><i style="left:0%"></i><i style="left:25%"></i><i style="left:50%"></i><i style="left:75%"></i><i style="left:100%"></i></div>
-          <div class="b"><em class="f-pi" style="width:74.3%"></em><b>22.3/s</b></div>
-        </div>
-      </div>
-      <div class="brow">
-        <div class="blab">GR00T<i>3B</i></div>
-        <div class="stack">
-          <div class="sgrid"><i style="left:0%"></i><i style="left:25%"></i><i style="left:50%"></i><i style="left:75%"></i><i style="left:100%"></i></div>
-          <div class="b"><em class="f-groot" style="width:66.0%"></em><b>19.8/s</b></div>
-        </div>
-      </div>
-      <div class="brow">
-        <div class="blab">SmolVLA<i>450M</i></div>
-        <div class="stack">
-          <div class="sgrid"><i style="left:0%"></i><i style="left:25%"></i><i style="left:50%"></i><i style="left:75%"></i><i style="left:100%"></i></div>
-          <div class="b"><em class="f-smol" style="width:61.3%"></em><b>18.4/s</b></div>
-        </div>
-      </div>
-      <div class="brow">
-        <div class="blab">WALL-OSS<i>slowest</i></div>
-        <div class="stack">
-          <div class="sgrid"><i style="left:0%"></i><i style="left:25%"></i><i style="left:50%"></i><i style="left:75%"></i><i style="left:100%"></i></div>
-          <div class="b"><em class="f-wall" style="width:50.3%"></em><b>15.1/s</b></div>
-        </div>
-      </div>
-      <div class="legend"><span>Decisions per second · axis 0–30 · NVIDIA L40S</span></div>
-    </div>
 
-    <div class="call">
-      <b>The smallest model was the fastest, by 94%.</b> ACT managed 29.3 decisions per second; WALL-OSS 15.1. On real hardware that gap matters — a robot that re-checks the world more often corrects sooner. And since three of the four large models didn't convert their size into better scores, they were <b>paying a speed penalty for nothing</b>.
-    </div>
-    <div class="call" style="border-left-color:var(--line)">
-      <b>One caveat on these figures.</b> Speed here is measured during live runs on a shared machine, so it drifts between campaigns — SmolVLA and π0.5 swapped places against our earlier round. Read the <b>big gaps</b> (ACT vs WALL-OSS) as real and the small ones as noise.
+      <div class="item">
+        <span class="when">21 Jul 2026</span><span class="tag method">Method</span>
+        <h4>Scoring moved from milestones to continuous placement progress</h4>
+        <p>The old score averaged three stages, two of which were saturated — every policy lifted the block, almost none placed it — leaving all five inside a 9.4-point band. Scoring the block's actual distance to the target, log-scaled, widened that to 13.4 points and cut the error margins from ±13 to ±3.</p>
+        <a class="more" href="methodology.html">How scoring works →</a>
+      </div>
+
+      <div class="item">
+        <span class="when">21 Jul 2026</span><span class="tag method">Method</span>
+        <h4>WALL-OSS re-run after an unequal-horizon defect</h4>
+        <p>Its earlier episodes ran 450 steps against 600 for every other policy — 25% less time on a task whose failure mode is running out of clock. Re-run at the common horizon it reached 0.7% success where it had scored 0%. Horizon is now asserted per policy and checked automatically at aggregation.</p>
+      </div>
+
+      <div class="item">
+        <span class="when">18 Jul 2026</span><span class="tag model">Models</span>
+        <h4>Five policies entered: GR00T, π0.5, WALL-OSS, SmolVLA, ACT</h4>
+        <p>Selected by popularity across GitHub stars, Hugging Face downloads and research adoption, plus a from-scratch ACT control. All adapted with the same 216 demonstrations and the same step budget.</p>
+        <a class="more" href="about.html">Selection criteria →</a>
+      </div>
+
     </div>
   </section>
 
   <section>
-    <h2>What the compute actually bought</h2>
-    <p class="lede">These models differ 80-fold in size. If scale were the answer, the scores would climb from left to right. Model size runs along the bottom on a <b>ratio scale</b> — each step is 10× more parameters, not 10 more.</p>
-
-    <div style="margin:26px 0 8px">
-      <svg viewBox="0 0 700 296" style="width:100%;height:auto" role="img" aria-label="Scatter of score against model size. ACT at 52 million scores 25.6; SmolVLA at 450 million scores 23.9; GR00T at 3 billion scores 36.2; WALL-OSS at 4 billion scores 23.7; pi-0.5 at 4.1 billion scores 22.9. No upward trend with size.">
-        <g stroke="var(--line-soft)" stroke-width="1">
-          <line x1="70" y1="250" x2="660" y2="250"/><line x1="70" y1="195" x2="660" y2="195"/>
-          <line x1="70" y1="140" x2="660" y2="140"/><line x1="70" y1="85" x2="660" y2="85"/>
-          <line x1="70" y1="30" x2="660" y2="30"/>
-        </g>
-        <g font-family="var(--mono)" font-size="11" fill="var(--dimmer)" text-anchor="end">
-          <text x="60" y="254">20</text><text x="60" y="199">25</text><text x="60" y="144">30</text>
-          <text x="60" y="89">35</text><text x="60" y="34">40</text>
-        </g>
-
-        <line x1="70" y1="188.2" x2="660" y2="188.2" stroke="#2b8a2b" stroke-width="1" stroke-dasharray="3 4" opacity=".7"/>
-        <text x="660" y="182" text-anchor="end" font-size="11" fill="#2b8a2b" font-family="var(--mono)">CONTROL 25.6</text>
-
-        <circle cx="101.1" cy="188.2" r="7" fill="#2b8a2b"/>
-        <text x="101.1" y="171" text-anchor="middle" font-size="12.5" fill="#2b8a2b" font-family="var(--sans)">ACT 52M</text>
-        <circle cx="352.4" cy="207.3" r="7" fill="#9d9d97"/>
-        <text x="352.4" y="228" text-anchor="middle" font-size="12.5" fill="var(--dim)" font-family="var(--sans)">SmolVLA</text>
-        <circle cx="573.4" cy="71.4" r="7" fill="#4478d0"/>
-        <text x="573.4" y="55" text-anchor="middle" font-size="12.5" fill="#4478d0" font-family="var(--sans)">GR00T 3B</text>
-        <circle cx="606.9" cy="209.2" r="7" fill="#c2c2ba"/>
-        <text x="600" y="200" text-anchor="end" font-size="12.5" fill="var(--dim)" font-family="var(--sans)">WALL-OSS</text>
-        <circle cx="609.8" cy="218.6" r="7" fill="#82827c"/>
-        <text x="618" y="240" text-anchor="middle" font-size="12.5" fill="var(--dim)" font-family="var(--sans)">π0.5 4.1B</text>
-
-        <line x1="70" y1="250" x2="660" y2="250" stroke="var(--line)" stroke-width="1"/>
-        <g font-family="var(--mono)" font-size="11" fill="var(--dimmer)" text-anchor="middle">
-          <text x="96.5" y="270">50M</text><text x="177.3" y="270">100M</text><text x="364.7" y="270">500M</text>
-          <text x="445.5" y="270">1B</text><text x="632.9" y="270">5B</text>
-          <text x="365" y="290" fill="var(--dim)">MODEL SIZE &middot; EACH STEP IS 10&times;</text>
-        </g>
-      </svg>
-      <div class="legend"><span>Placement score against parameter count · vertical axis starts at 18</span></div>
-    </div>
-
-    <div class="call">
-      <b>The line doesn't climb — it sags.</b> Going from 52 million parameters to 4.1 billion, an <b>80-fold</b> increase in size, buys you <i>less</i> score. Four of the five models sit on a flat, slightly downward band. Only GR00T breaks upward, and the model directly beside it in size, WALL-OSS, sits at the bottom — so the thing lifting GR00T plainly isn't scale.
-    </div>
-
-    <h2 style="margin-top:38px;font-size:19px">Score per billion parameters</h2>
-    <p class="lede">Turning that around: how much capability did each billion parameters actually deliver? The answers span nearly two orders of magnitude, so the scale below is <b>×10 per step</b> — each gridline is ten times the last.</p>
-
-    <div style="margin:22px 0 8px">
-      <svg viewBox="0 0 700 256" style="width:100%;height:auto" role="img" aria-label="Bar chart of score per billion parameters on a times-ten scale. ACT 493, SmolVLA 53, GR00T 12, WALL-OSS 5.9, pi-0.5 5.6.">
-        <g stroke="var(--line-soft)" stroke-width="1">
-          <line x1="323.3" y1="10" x2="323.3" y2="214"/><line x1="496.7" y1="10" x2="496.7" y2="214"/>
-          <line x1="670" y1="10" x2="670" y2="214"/>
-        </g>
-        <g font-family="var(--sans)" font-size="13">
-          <text x="140" y="35" text-anchor="end" fill="#2b8a2b">ACT 52M</text>
-          <rect x="150" y="17" width="466.7" height="26" fill="#2b8a2b"/>
-          <text x="629" y="35" font-size="12.5" fill="#2b8a2b" font-family="var(--mono)">493</text>
-
-          <text x="140" y="75" text-anchor="end" fill="var(--dim)">SmolVLA 450M</text>
-          <rect x="150" y="57" width="299.0" height="26" fill="#9d9d97"/>
-          <text x="461" y="75" font-size="12.5" fill="var(--dim)" font-family="var(--mono)">53</text>
-
-          <text x="140" y="115" text-anchor="end" fill="#4478d0">GR00T 3B</text>
-          <rect x="150" y="97" width="187.6" height="26" fill="#4478d0"/>
-          <text x="350" y="115" font-size="12.5" fill="#4478d0" font-family="var(--mono)">12</text>
-
-          <text x="140" y="155" text-anchor="end" fill="var(--dim)">WALL-OSS 4B</text>
-          <rect x="150" y="137" width="134.0" height="26" fill="#c2c2ba"/>
-          <text x="296" y="155" font-size="12.5" fill="var(--dim)" font-family="var(--mono)">5.9</text>
-
-          <text x="140" y="195" text-anchor="end" fill="var(--dim)">π0.5 4.1B</text>
-          <rect x="150" y="177" width="129.3" height="26" fill="#82827c"/>
-          <text x="291" y="195" font-size="12.5" fill="var(--dim)" font-family="var(--mono)">5.6</text>
-        </g>
-        <line x1="150" y1="214" x2="670" y2="214" stroke="var(--line)" stroke-width="1"/>
-        <g font-family="var(--mono)" font-size="11" fill="var(--dimmer)" text-anchor="middle">
-          <text x="150" y="233">1</text><text x="323.3" y="233">10</text>
-          <text x="496.7" y="233">100</text><text x="670" y="233">1000</text>
-          <text x="410" y="251" fill="var(--dim)">SCORE PER BILLION PARAMETERS &middot; EACH STEP IS 10&times; &middot; HIGHER IS MORE EFFICIENT</text>
-        </g>
-      </svg>
-    </div>
-
-    <div class="call" style="border-left-color:var(--line)">
-      <b>Read the gridlines, not the bar lengths.</b> On a ×10 scale a bar twice as long is <b>a hundred times</b> the value, not twice it. ACT's bar is drawn about 1.6× SmolVLA's, but the real ratio is <b>9×</b>; it is drawn about 2.5× GR00T's, and the real ratio is <b>41×</b>. That compression is what lets all five sit on one chart and stay legible — the printed numbers are the authority, not the lengths.
-    </div>
-
-    <div class="call">
-      <b>An 88-fold gap in value for money.</b> ACT returns roughly <b>493 points of score per billion parameters</b>; π0.5 returns 5.6. Even GR00T, the winner, is 40× less efficient per parameter than the little control — it buys its lead by being 58× larger. If you are paying for inference on real hardware, that ratio is the number that matters.
-    </div>
-    <div class="call" style="border-left-color:var(--line)">
-      <b>What this comparison ignores.</b> Parameter count is a crude stand-in for cost, and per-parameter efficiency flatters small models by construction. It also ignores the thing pre-training is <i>for</i>: none of this measures generalising to a new object, instruction or scene, which is where the large models are supposed to earn their size. On this one narrow task, they didn't.
-    </div>
-  </section>
-
-  <section>
-    <h2>Everything at once</h2>
-    <p class="lede">If bigger were better, the score column would climb with size. It doesn't.</p>
-
-    <div class="tbl">
-      <table>
-        <tr><th>Model</th><th>Size</th><th>Speed</th><th>Score</th><th>Times finished</th></tr>
-        <tr><td class="name">GR00T <span class="chip sig">humanoid-trained</span></td><td class="m">3B</td><td class="m">19.8/s</td><td class="m" style="color:var(--signal)">36.2 ± 4.3</td><td class="m" style="color:var(--signal)">6 / 150</td></tr>
-        <tr><td class="name">ACT <span class="chip">no pre-training</span></td><td class="m">52M</td><td class="m" style="color:var(--ok)">29.3/s</td><td class="m">25.6 ± 3.2</td><td class="m">2 / 150</td></tr>
-        <tr><td class="name">SmolVLA</td><td class="m">450M</td><td class="m">18.4/s</td><td class="m">23.9 ± 2.9</td><td class="m" style="color:var(--bad)">0 / 150</td></tr>
-        <tr><td class="name">WALL-OSS</td><td class="m">&mdash;</td><td class="m" style="color:var(--bad)">15.1/s</td><td class="m">23.7 ± 3.0</td><td class="m">1 / 150</td></tr>
-        <tr><td class="name">π0.5</td><td class="m">4.1B &nbsp;largest</td><td class="m">22.3/s</td><td class="m" style="color:var(--bad)">22.9 ± 2.8</td><td class="m" style="color:var(--bad)">0 / 150</td></tr>
-      </table>
-    </div>
-
-    <div class="call">
-      <b>There is no size trend.</b> The largest model in the test scores last. The smallest, with no pre-training at all, scores second. The three pre-trained models span 9× in parameter count and land within <b>1.0 point</b> of each other. The only outlier is GR00T — and what sets it apart isn't scale, it's that it was pre-trained on this shape of robot.
-    </div>
-  </section>
-
-  <section>
-    <h2>Where this is weak</h2>
-    <div class="call" style="border-left-color:var(--line)">
-      <b>One task, one robot.</b> A single pick-and-place job on one humanoid. Not a verdict on these models generally.<br><br>
-      <b>GR00T had home advantage.</b> Pre-trained on this very class of robot. Its win means "best for humanoids", not "best overall".<br><br>
-      <b>Only one gap here is statistically solid.</b> GR00T's lead over the control clears its margin; nothing else does. The ordering among the other four is <b>not</b> a ranking — treat those as tied.<br><br>
-      <b>Still only nine successes.</b> Out of 750. The pass/fail column remains far too sparse to rank on, which is exactly why the main score measures distance rather than completion.<br><br>
-      <b>Modest adaptation.</b> 216 demonstrations, 20,000 training steps each. With far more data the ordering could change.<br><br>
-      <b>Simulation only.</b> No physical robot was involved, so nothing here proves real-world behaviour.
+    <h2>What's next</h2>
+    <div class="grid">
+      <div class="card">
+        <div class="big">4</div>
+        <h4>More task categories</h4>
+        <p>Phase 0 is one pick-and-place task. Four further categories are designed and awaiting scenes — a single task cannot support a general capability claim.</p>
+      </div>
+      <div class="card">
+        <div class="big">±3</div>
+        <h4>Tighter margins</h4>
+        <p>At 150 episodes we resolve gaps of about 4 points. The three tied models need either more episodes or a more discriminative task to separate.</p>
+      </div>
+      <div class="card">
+        <div class="big">1</div>
+        <h4>The stopping problem</h4>
+        <p>GR00T locates the target best and then carries the block back out again. A halt-when-close rule is the cheapest experiment on the list.</p>
+      </div>
     </div>
   </section>
 
   <footer>
-    <b>Bottom line.</b> Open-source robot models already handle seeing and grabbing perfectly — 750 out of 750 attempts. What defeats them is <b>letting go in the right place</b>, and they miss sideways, not vertically. Four of the five park beside the target and run out the clock; GR00T instead gets closest of anyone and then drives straight past, which makes its failure a stopping problem rather than a seeing one. The largest model with the best training score finished last and never once completed the task; a 52-million-parameter model with no pre-training outscored all three of the other pre-trained systems; and the only model to beat that baseline convincingly was the one pre-trained on robots shaped like this one. <b>Match the model to your robot's body, distrust training scores, and expect precise placement — not grasping — to be the wall.</b>
-
+    <b>RoboBench</b> is an independent benchmark. Results are simulation-only and carry no claim about real-robot transfer. Every score here comes from logged, per-episode rollouts.
     <div class="meta">
       TASK &nbsp;Isaac-PickPlace-RedBlock · Unitree G1 humanoid, 29 DoF, 2-finger grippers<br>
-      SIM &nbsp;&nbsp;NVIDIA Isaac Sim 5.1 · success = block inside a 3.7 × 4.9 × 0.5 cm target volume<br>
+      SIM &nbsp;&nbsp;NVIDIA Isaac Sim 5.1 · single NVIDIA L40S<br>
       DATA &nbsp;216 demonstrations · 20,000 training steps per model (ACT 60,000, from scratch)<br>
-      RUNS &nbsp;150 trials per model from identical starting positions, identical 600-step limit · 750 attempts logged step-by-step<br>
-      SCORE &nbsp;share of the block's starting distance closed, 0–100 · ± is the 95% confidence margin<br>
-      MODELS &nbsp;GR00T N1.7 (NVIDIA) · π0.5 (Physical Intelligence) · WALL-OSS (X Square Robot) · SmolVLA (Hugging Face) · ACT (control)<br>
-      REVISION &nbsp;Supersedes the 50-trial phase-0 report. That round scored models by how many of three stages they completed; two of those three stages were passed or failed by every model alike, so the scores compressed into a 9-point band and the ranking below first place was noise. This round measures distance to target instead, and triples the trials.
+      RUNS &nbsp;150 episodes per policy · 750 scored rollouts · uniform 600-step horizon
     </div>
   </footer>
 

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How we benchmark — RoboBench</title>
+<meta name="description" content="The embodiment, task, adaptation budget, scoring rule and statistical standards behind RoboBench.">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div class="wrap">
+
+  <nav class="nav">
+    <a class="brand" href="index.html">RoboBench</a>
+    <a class="l" href="index.html">Leaderboard</a>
+    <a class="l" href="methodology.html" aria-current="page">How we benchmark</a>
+    <a class="l" href="about.html">What we do</a>
+    <a class="l" href="report.html">Full report</a>
+  </nav>
+
+  <header>
+    <div class="kicker">Methodology</div>
+    <h1>How we benchmark</h1>
+    <p class="standfirst">Every policy gets the same body, the same task, the same data, the same seeds and the same clock. The only thing that varies is the policy. This page is the full protocol, including the parts that constrain what we are allowed to claim.</p>
+  </header>
+
+  <section>
+    <h2>1 · One body for everyone</h2>
+    <p class="body">All policies control a <b>Unitree G1 humanoid</b> — 29 degrees of freedom, two-finger Dex1 grippers — in NVIDIA Isaac Sim 5.1. Nothing is re-tuned per model.</p>
+    <p class="body">This is the single most important design choice. Published robot policies are evaluated on whatever hardware their authors had, so a reported success rate says as much about the robot as the model. Fixing the body makes the numbers comparable at the cost of a real bias we state openly: <b>a policy pre-trained on robots of this shape starts ahead.</b> That is why GR00T carries a ⚑ on the leaderboard.</p>
+    <div class="tbl">
+      <table>
+        <tr><th>Component</th><th>Specification</th></tr>
+        <tr><td class="name">Robot</td><td>Unitree G1, 29 DoF, Dex1 two-finger grippers</td></tr>
+        <tr><td class="name">Observation</td><td>3 cameras — head, left wrist, right wrist — plus 16-dim joint state</td></tr>
+        <tr><td class="name">Action</td><td>16-dim: 7 per arm, 2 gripper</td></tr>
+        <tr><td class="name">Simulator</td><td>NVIDIA Isaac Sim 5.1 on a single NVIDIA L40S</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>2 · The task</h2>
+    <p class="body">Pick up a red block and place it on a target. Simple to state, and it separates into three stages that behave very differently: <b>lift</b>, <b>carry</b>, and <b>place</b>.</p>
+    <p class="body">The target zone is <b>3.7 × 4.9 × 0.5 cm</b> — roughly a matchbox, and importantly <b>not</b> a cube. It is 7.4× tighter in height than in width, which drives the scoring design below.</p>
+    <div class="call quiet">
+      <b>A known limitation.</b> Lifting succeeds essentially 100% of the time and placing almost never does. Both extremes carry little information — a test item that everyone passes, or everyone fails, cannot separate anyone. Only the middle stage discriminates, which is why the score measures continuous distance rather than counting stages, and why more task categories are the top priority.
+    </div>
+  </section>
+
+  <section>
+    <h2>3 · Equal adaptation budget</h2>
+    <p class="body">Every policy is fine-tuned on the <b>same 216 demonstrations</b> for the <b>same 20,000 steps</b>, then evaluated on the <b>same 150 seeds</b> with the <b>same 600-step episode limit</b>. No per-model hyperparameter search. No extra data for the big models.</p>
+    <p class="body">The from-scratch ACT control gets 60,000 steps rather than 20,000, because it starts from random weights instead of a pre-trained checkpoint. That is a deliberate handicap <i>against</i> the pre-trained models' argument, and it still does not save three of them.</p>
+    <div class="call">
+      <b>Horizon equality is enforced, not assumed.</b> An early run gave one policy 450-step episodes against 600 for everyone else — 25% less clock on a task whose dominant failure is running out of time. The result was invalid and was re-run. Episode horizon is now recorded per policy and checked automatically when results are aggregated.
+    </div>
+  </section>
+
+  <section>
+    <h2>4 · How the score works</h2>
+    <p class="body">Outright success is far too rare to rank on — 9 placements in 750 attempts. So instead of pass/fail we measure <b>how close the block actually got</b>, and reduce it to one number per episode.</p>
+
+    <h3>Distance is measured per-axis, not as a straight line</h3>
+    <p class="body">Because the target is 7.4× tighter in height than width, ordinary Euclidean distance is the wrong ruler — it treats 1 mm of height error as equal to 1 mm of sideways error when the box plainly does not. Each axis is divided by that axis's own half-width, and we take the worst one:</p>
+    <div class="call quiet" style="font-family:var(--mono);font-size:13px">
+      n = max( |Δx| / 18.5 mm , |Δy| / 24.3 mm , |Δz| / 2.5 mm )
+    </div>
+    <p class="body">n ≤ 1 means the block is inside the target on every axis at once — that is exactly success. n = 2 means "one box-width out on the worst axis".</p>
+
+    <h3>Progress is log-scaled</h3>
+    <p class="body">Every policy fails in the endgame, so that is where the score needs resolution. A linear scale spends most of its range on the approach, which is already solved. Log scaling gives <b>equal credit for each halving of the remaining error</b>, so 12→6 cm and 6→3 cm count the same:</p>
+    <div class="call quiet" style="font-family:var(--mono);font-size:13px">
+      score = 100 × log( n₀ / n_best ) ÷ log( n₀ )
+    </div>
+    <p class="body">n₀ is where the block started. <b>0</b> means it ended no closer than it began; <b>100</b> means placed. A full score means exactly what it always meant.</p>
+
+    <h3>τ50 — the tolerance a policy can actually hit</h3>
+    <p class="body">Because closest approach is recorded for every episode, success at <i>any</i> target size can be computed afterwards without re-running anything. <b>τ50</b> is the target tolerance at which a policy succeeds half the time, in units of the real zone. Lower is better; τ50 = 1 would mean solving the task as specified. Nobody is close — the leaderboard's best is 3.93.</p>
+  </section>
+
+  <section>
+    <h2>5 · When we call it a tie</h2>
+    <p class="body">Every score is an estimate from 150 episodes and carries a 95% margin. At this sample size we can resolve gaps of roughly <b>4 points</b>. Anything smaller is reported as a tie and shown as a tie on the leaderboard, no matter how convenient an ordering would be.</p>
+    <p class="body">Differences against the control are tested with a two-proportion exact test; the continuous score is compared using its own margin. Three of the five models currently share rank 2 for exactly this reason.</p>
+    <div class="call">
+      <b>We do not manufacture separation.</b> There are standard ways to make a flat chart look dramatic — truncate the axis, normalise to the range, rescale to fill the frame. All of them widen the picture without widening the evidence, and they make a real effect indistinguishable from stretched noise. Where a chart on this site is zoomed, it says so and explains why the encoding permits it.
+    </div>
+  </section>
+
+  <section>
+    <h2>6 · What we deliberately do not measure</h2>
+    <ul class="body">
+      <li><b>Generalisation.</b> One task, one object, one instruction. Nothing here tests transfer to new objects, scenes or commands — which is precisely what large-scale pre-training is supposed to buy. Its absence from these results is not evidence it does not exist.</li>
+      <li><b>Real hardware.</b> Simulation only. No claim is made about physical robots.</li>
+      <li><b>Data efficiency curves.</b> One budget, one point. Whether the ordering holds with 10× the demonstrations is untested.</li>
+      <li><b>Language grounding.</b> The task uses a fixed instruction string, so language-conditioned models get no credit for understanding it.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>7 · Reproducibility</h2>
+    <p class="body">Every episode records the block's full trajectory, not just its outcome. That makes any future re-scoring free — new metrics can be computed from stored rollouts without touching a GPU — and it is how the two failure modes on the leaderboard were found at all. An earlier version of this benchmark stored only three booleans per episode and could not have detected either.</p>
+    <div class="tbl">
+      <table>
+        <tr><th>Recorded per episode</th><th>Why</th></tr>
+        <tr><td class="name">Full pose trace</td><td>Re-score against any future metric without re-running</td></tr>
+        <tr><td class="name">Closest approach</td><td>Continuous score and the τ50 tolerance curve</td></tr>
+        <tr><td class="name">Per-axis error at closest approach</td><td>Distinguishes sideways failure from height failure</td></tr>
+        <tr><td class="name">Time to closest approach</td><td>Separates decisive approach from slow drift</td></tr>
+        <tr><td class="name">Terminal drift</td><td>Detects policies that reach the target and leave again</td></tr>
+        <tr><td class="name">Control frequency</td><td>Inference cost on identical hardware</td></tr>
+      </table>
+    </div>
+    <a class="cta" href="report.html">See the results this produced →</a>
+  </section>
+
+  <footer>
+    <b>RoboBench</b> · methodology last revised 21 July 2026.
+    <div class="meta">
+      Changes to scoring are announced on the <a href="index.html">leaderboard page</a> under Latest updates.
+    </div>
+  </footer>
+
+</div>
+</body>
+</html>
