@@ -1,0 +1,24 @@
+# Defensive: this repo should only ever contain the site.
+# The parent working directory holds an SSH private key and AWS identifiers;
+# these patterns make an accidental copy-then-commit fail loudly rather than publish.
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa*
+credentials
+.aws/
+aws/
+.env
+*.env
+
+# Raw evaluation data (large; kept out of the site repo)
+results/
+results_v2/
+*.jsonl
+
+# Local noise
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db
