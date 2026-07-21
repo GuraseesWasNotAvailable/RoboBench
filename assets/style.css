@@ -27,7 +27,7 @@
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg);color:var(--text);font-family:var(--sans);
      -webkit-font-smoothing:antialiased;line-height:1.6;padding:0 24px 80px}
-.wrap{max-width:900px;margin:0 auto}
+.wrap{max-width:1180px;margin:0 auto}
 a{color:inherit}
 
 /* ---------- nav ---------- */
@@ -115,7 +115,7 @@ ul.body b{color:var(--text);font-weight:600}
 .card .big{font-family:var(--mono);font-size:22px;font-weight:700;color:var(--signal);letter-spacing:-.02em}
 
 .call{margin-top:24px;padding:19px 21px;background:var(--panel);border:1px solid var(--line);
-      border-left:2px solid var(--signal);border-radius:3px;font-size:14.5px;color:var(--dim)}
+      border-left:2px solid var(--signal);border-radius:3px;font-size:14.5px;color:var(--dim);max-width:76ch}
 .call.quiet{border-left-color:var(--line)}
 .call b{color:var(--text);font-weight:650}
 .call + .call{margin-top:11px}
