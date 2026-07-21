@@ -59,9 +59,18 @@ ul.body{color:var(--dim);font-size:14.8px;margin:14px 0 0 20px;max-width:68ch}
 ul.body li{margin-top:7px}
 ul.body b{color:var(--text);font-weight:600}
 
+/* ---------- hero: leaderboard is the landing page ---------- */
+.hero{padding-top:26px;border-bottom:1px solid var(--line)}
+.hero h1{font-size:clamp(32px,5.5vw,50px);margin-top:12px}
+.hero .standfirst{max-width:70ch;margin-bottom:6px}
+.scorekey{font-size:12.5px;color:var(--dimmer);margin-top:14px;line-height:1.6;max-width:74ch}
+.scorekey b{color:var(--dim);font-weight:600}
+.scorekey a{color:var(--dim)}
+
 /* ---------- leaderboard ---------- */
-.lb{margin-top:26px;overflow-x:auto;border:1px solid var(--line);border-radius:5px;background:var(--panel)}
-.lb table{width:100%;border-collapse:collapse;font-size:13.5px}
+.lb{margin-top:24px;overflow-x:auto;border:1px solid var(--line);border-radius:6px;background:var(--panel)}
+.hero .lb{margin-top:28px;box-shadow:0 1px 0 var(--line-soft)}
+.lb table{width:100%;border-collapse:collapse;font-size:14.5px}
 .lb th{font-family:var(--mono);font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--dimmer);
        text-align:left;padding:13px 14px;border-bottom:1px solid var(--line);font-weight:500;white-space:nowrap}
 .lb td{padding:14px;border-bottom:1px solid var(--line-soft);color:var(--dim);white-space:nowrap;vertical-align:middle}
@@ -71,8 +80,10 @@ ul.body b{color:var(--text);font-weight:600}
 .lb .nm{color:var(--text);font-weight:650}
 .lb .nm i{display:block;font-style:normal;font-family:var(--mono);font-size:10.5px;color:var(--dimmer);
           margin-top:3px;letter-spacing:.02em;font-weight:400}
-.lb .sc{color:var(--text);font-weight:700;font-size:15px}
+.lb .sc{color:var(--text);font-weight:700;font-size:17px;font-variant-numeric:tabular-nums}
+.hero .lb .sc{font-size:19px}
 .lb .ci{font-size:11px;color:var(--dimmer)}
+.lb .nm{font-size:14px}
 .lb tr.lead td{background:color-mix(in srgb, var(--signal) 7%, transparent)}
 .swatch{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:8px;vertical-align:0}
 .tie{font-family:var(--mono);font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--dimmer);

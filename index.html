@@ -18,15 +18,10 @@
     <a class="l" href="report.html">Full report</a>
   </nav>
 
-  <header>
+  <section class="hero">
     <div class="kicker">Open benchmark · updated 21 Jul 2026</div>
-    <h1>One robot body. Every policy. Same rules.</h1>
-    <p class="standfirst">Open-source robot policies are published on different robots, different tasks and different training budgets, which makes them nearly impossible to compare. RoboBench puts them all in charge of the <b>same humanoid</b>, on the <b>same task</b>, with an <b>identical adaptation budget</b>, and scores them from auditable simulated rollouts.</p>
-  </header>
-
-  <section>
-    <h2>Global leaderboard</h2>
-    <p class="lede">Score is <b>placement progress</b>: how much of the block's starting distance to the target was closed, 0–100, where 100 means placed. Continuous rather than pass/fail, because outright success is still too rare to rank on. Every figure carries a 95% margin — <b>where margins overlap, models are tied and shown as tied</b>.</p>
+    <h1>Global leaderboard</h1>
+    <p class="standfirst">Every open-source robot policy, put in charge of the <b>same humanoid</b>, on the <b>same task</b>, with an <b>identical adaptation budget</b> — scored from auditable simulated rollouts. One number, ranked, with error bars.</p>
 
     <div class="lb">
       <table>
@@ -75,7 +70,9 @@
       </table>
     </div>
 
-    <p class="tie" style="margin-top:14px">Three models share rank 2. Their margins overlap almost entirely — ranking them 2nd, 3rd and 4th would be reporting noise as a result.</p>
+    <p class="tie" style="margin-top:14px">Three models share rank 2 — their margins overlap almost entirely, so ranking them 2nd, 3rd and 4th would report noise as a result. <a href="methodology.html" style="color:var(--signal);text-decoration:none">How ties are decided →</a></p>
+
+    <p class="scorekey"><b>Score</b> = placement progress, 0–100, how much of the block's distance to the target was closed (100 = placed). <b>τ50</b> = target tolerance a policy hits half the time, lower is better. <b>±</b> = 95% margin. <a href="methodology.html">Full scoring rule →</a></p>
 
     <div class="call">
       <b>⚑ GR00T has a home advantage.</b> It is the only entrant pre-trained on humanoids of this shape, so its lead means "best for this body", not "best in general". <b>ACT is the control</b>, not a contestant: 52M parameters, no pre-training at all, learning only from this task's 216 demonstrations. It is listed to show what the pre-trained models have to beat — and three of the four do not.
