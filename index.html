@@ -13,9 +13,9 @@
   <nav class="nav">
     <a class="brand" href="index.html">RoboBench</a>
     <a class="l" href="index.html" aria-current="page">Leaderboard</a>
+    <a class="l" href="index.html#benchmarks">Benchmarks</a>
     <a class="l" href="methodology.html">How we benchmark</a>
     <a class="l" href="about.html">What we do</a>
-    <a class="l" href="report.html">Full report</a>
   </nav>
 
   <section class="hero">
@@ -81,6 +81,36 @@
     <a class="cta" href="report.html">Read the full phase-0b report →</a>
   </section>
 
+  <section id="benchmarks">
+    <h2>Benchmarks</h2>
+    <p class="lede">RoboBench is a suite. Each benchmark asks a different question, on a different embodiment, with its <b>own protocol, grading rubric, and report</b>. The leaderboard above is the flagship G1 suite; the full set:</p>
+
+    <div class="grid" style="margin-top:26px">
+      <div class="card" style="border-top:3px solid var(--groot)">
+        <div style="font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--dimmer)">Equal-adaptation · Unitree G1</div>
+        <h4 style="margin-top:6px">G1 pick-and-place</h4>
+        <p>Five policies, one humanoid, an identical fine-tuning budget — who adapts best to this body? 750 rollouts, continuous placement scoring.</p>
+        <p style="font-family:var(--mono);font-size:12px;color:var(--text);margin-top:10px">Leader: GR00T N1.7 · 36.2</p>
+        <div style="margin-top:14px;display:flex;gap:16px;font-size:13px">
+          <a href="report.html" style="color:var(--signal);text-decoration:none">Report →</a>
+          <a href="methodology.html" style="color:var(--signal);text-decoration:none">Rubric →</a>
+        </div>
+      </div>
+      <div class="card" style="border-top:3px solid var(--ok)">
+        <div style="font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--dimmer)">Zero-shot · WidowX / SimplerEnv</div>
+        <h4 style="margin-top:6px">Zero-shot WidowX</h4>
+        <p>Four policies, one WidowX arm, <b>no fine-tuning at all</b> — what can a shipped checkpoint do out of the box? 2,800 episodes across seven Bridge-style tasks.</p>
+        <p style="font-family:var(--mono);font-size:12px;color:var(--text);margin-top:10px">Leader: Octo-Base · 34.9%</p>
+        <div style="margin-top:14px;display:flex;gap:16px;font-size:13px">
+          <a href="report-widowx.html" style="color:var(--signal);text-decoration:none">Report →</a>
+          <a href="rubric-widowx.html" style="color:var(--signal);text-decoration:none">Rubric →</a>
+        </div>
+      </div>
+    </div>
+
+    <p class="tie" style="margin-top:16px">Scores are <b>not comparable across benchmarks</b> — different arms, tasks, and protocols. Each is ranked only within itself.</p>
+  </section>
+
   <section>
     <h2>Latest updates</h2>
     <p class="lede">Benchmark releases, new models entering the leaderboard, and changes to how we score.</p>
@@ -96,6 +126,13 @@
            ═════════════════════════════════════════════════════════════════════════ -->
 
       <div class="item new">
+        <span class="when">21 Jul 2026</span><span class="tag result">Result</span>
+        <h4>New benchmark — zero-shot WidowX, four policies, 2,800 episodes</h4>
+        <p>A second, separate benchmark: Octo, SpatialVLA, OpenVLA and RT-1-X run on a WidowX arm in SimplerEnv with <b>no fine-tuning at all</b>. Octo-Base (93M) leads the average at 34.9%, but the models win different tasks — bigger is not better zero-shot, and eggplant-to-sink is unsolved by everyone (0/400). Has its own grading rubric and report.</p>
+        <a class="more" href="report-widowx.html">Read the report →</a> &nbsp; <a class="more" href="rubric-widowx.html">Grading rubric →</a>
+      </div>
+
+      <div class="item">
         <span class="when">21 Jul 2026</span><span class="tag result">Result</span>
         <h4>Phase 0b published — 750 rollouts, five policies</h4>
         <p>150 episodes per policy on a uniform 600-step horizon. GR00T N1.7 is the only entrant to beat the from-scratch control (+10.6 ± 5.4). The other three are statistically tied with each other and sit at or below a 52M baseline with no pre-training at all.</p>

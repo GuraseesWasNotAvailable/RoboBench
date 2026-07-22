@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zero-shot WidowX — grading rubric — RoboBench</title>
+<meta name="description" content="The protocol, scoring, and statistical standards for the zero-shot WidowX / SimplerEnv benchmark.">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div class="wrap">
+
+  <nav class="nav">
+    <a class="brand" href="index.html">RoboBench</a>
+    <a class="l" href="index.html">Leaderboard</a>
+    <a class="l" href="index.html#benchmarks">Benchmarks</a>
+    <a class="l" href="report-widowx.html">WidowX report</a>
+    <a class="l" href="about.html">About</a>
+  </nav>
+
+  <header>
+    <div class="kicker">Grading rubric · Zero-shot WidowX</div>
+    <h1>How the zero-shot WidowX benchmark is graded</h1>
+    <p class="standfirst">This is a separate benchmark from the G1 pick-and-place suite, with a different embodiment and a fundamentally different question. Here, models get <b>no task-specific fine-tuning at all</b> — they are run exactly as shipped. It measures out-of-the-box capability, not adapted capability.</p>
+  </header>
+
+  <section>
+    <h2>1 · The question: zero-shot, not adapted</h2>
+    <p class="body">The G1 benchmark gives every model an <b>equal adaptation budget</b> — same demos, same steps — and asks "who adapts best to this body?". This benchmark asks the opposite: <b>"what can you do with no adaptation at all?"</b> Each policy is loaded from its public checkpoint and run directly on the tasks. No demonstrations, no fine-tuning, no per-model tuning.</p>
+    <div class="call">
+      <b>Why both exist.</b> A model can be strong out-of-the-box and poor at adapting, or vice-versa. Reporting them as one number hides that. These two benchmarks are complementary axes — shipped capability vs. adapted capability — and a policy earns a place on each independently.
+    </div>
+  </section>
+
+  <section>
+    <h2>2 · Embodiment and tasks</h2>
+    <p class="body">A <b>WidowX arm</b> in <b>SimplerEnv</b>, on seven Bridge-style tabletop tasks spanning drawers, pick-and-place, and stacking:</p>
+    <div class="tbl">
+      <table>
+        <tr><th>Task</th><th>Type</th><th>Difficulty (mean over 4 models)</th></tr>
+        <tr><td class="name">Close drawer</td><td>Articulated</td><td class="m">67.8% — easiest</td></tr>
+        <tr><td class="name">Eggplant to basket</td><td>Pick-place</td><td class="m">32.0%</td></tr>
+        <tr><td class="name">Open drawer</td><td>Articulated</td><td class="m">27.2%</td></tr>
+        <tr><td class="name">Carrot to plate</td><td>Pick-place</td><td class="m">25.5%</td></tr>
+        <tr><td class="name">Spoon to towel</td><td>Pick-place</td><td class="m">15.5%</td></tr>
+        <tr><td class="name">Stack cube</td><td>Stacking</td><td class="m">11.2%</td></tr>
+        <tr><td class="name">Eggplant to sink</td><td>Pick-place</td><td class="m">0.0% — unsolved</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>3 · Budget — identical for every model</h2>
+    <div class="tbl">
+      <table>
+        <tr><th>Parameter</th><th>Value</th></tr>
+        <tr><td class="name">Episodes</td><td class="m">4 models × 7 tasks × 100 variants = 2,800</td></tr>
+        <tr><td class="name">Per model</td><td class="m">700 identical evaluation episodes</td></tr>
+        <tr><td class="name">Horizon</td><td class="m">300 steps</td></tr>
+        <tr><td class="name">Seed</td><td class="m">20260719 (paired variants across models)</td></tr>
+        <tr><td class="name">Protocol</td><td class="m">base_exhaustive_official_v1, zero-shot, development partition</td></tr>
+        <tr><td class="name">Hardware</td><td class="m">2× NVIDIA L40S</td></tr>
+      </table>
+    </div>
+    <p class="body">Variants are <b>paired across models</b> — every policy sees the same 100 starting configurations per task, so a difference is the policy, not the draw.</p>
+  </section>
+
+  <section>
+    <h2>4 · Scoring</h2>
+    <h3>Headline: official binary success</h3>
+    <p class="body">The primary metric is SimplerEnv's <b>official binary success</b> per episode — the task's own completion criterion, not a hand-rolled one. Per-model rate = successes ÷ 700; per-cell rate = successes ÷ 100.</p>
+    <h3>Uncertainty: Wilson 95%</h3>
+    <p class="body">Every rate carries a <b>Wilson score interval</b> (correct near 0% and 100%, where the normal approximation breaks). <b>Overlapping intervals on the same task mean a tie</b>, and are reported as a tie — the 1.9-point gap between the top two models is exactly such a case.</p>
+    <h3>Beyond binary: stage and trajectory diagnostics</h3>
+    <p class="body">Binary success undercounts partial progress, so each episode is also decomposed into stages — <b>grasp → lift → transport → align → release → finish</b> — plus trajectory diagnostics (path length, end-effector jerk, horizon use, recovery fraction, gripper-closed fraction). These show <i>where</i> a policy loses capability, not just that it did: most failures reach transport and then stall out at the step limit.</p>
+  </section>
+
+  <section>
+    <h2>5 · Reading the results honestly</h2>
+    <ul class="body">
+      <li><b>The mean hides specialists.</b> Overall rates are close (Octo 34.9%, SpatialVLA 33.0%) but the task profiles are not — they win different tasks. A single "Bridge score" that averages an easy drawer with an unsolved sink is close to meaningless; the per-task fingerprint is the real result.</li>
+      <li><b>Sink does not decide rankings.</b> Eggplant-to-sink is 0/400 — every model, every attempt. A task no one can do under this protocol carries no discriminative signal and is excluded from ranking claims.</li>
+      <li><b>Bigger is not better here.</b> The 7B and 4B models do not dominate; a 93M generalist leads the average. Zero-shot capability is not a function of scale on this suite.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>6 · What this benchmark does not measure</h2>
+    <p class="body"><b>Adaptation</b> — that's the G1 suite's job; nothing here fine-tunes. <b>Real hardware</b> — SimplerEnv is a real-to-sim approximation of Bridge scenes, so a sim-to-real gap remains and no real-robot claim is made. <b>Anything outside these seven tasks</b> — it is a snapshot of shipped checkpoints on one arm, not a general capability verdict.</p>
+    <a class="cta" href="report-widowx.html">See the full results →</a>
+  </section>
+
+  <footer>
+    <b>RoboBench</b> · zero-shot WidowX rubric. This benchmark is scored on official binary success with
+    Wilson intervals; its report hosts the full per-task and per-episode data.
+    <div class="meta">
+      The G1 pick-and-place benchmark uses a different (equal-adaptation) protocol — see
+      <a href="methodology.html">its rubric</a>. Both are listed on the
+      <a href="index.html#benchmarks">benchmarks page</a>.
+    </div>
+  </footer>
+
+</div>
+</body>
+</html>
