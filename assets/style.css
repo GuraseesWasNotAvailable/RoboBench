@@ -2,7 +2,7 @@
   --bg:#0E1116; --panel:#161A21; --panel-2:#1C212A; --line:#262C36; --line-soft:#1E242D;
   --text:#E6E9EE; --dim:#868F9D; --dimmer:#5A6472;
   --signal:#E8A33D; --ok:#5FB49C; --mid:#5B7089; --bad:#C4635C;
-  --groot:#4478d0; --act:#2b8a2b; --g1:#9d9d97; --g2:#c2c2ba; --g3:#82827c;
+  --groot:#4478d0; --act:#2b8a2b; --g1:#9d9d97; --g2:#c2c2ba; --g3:#82827c; --g4:#707069; --g5:#9a9a92;
   --mono:ui-monospace,"SF Mono","Cascadia Mono","Roboto Mono",Consolas,monospace;
   --sans:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
 }
@@ -88,6 +88,24 @@ ul.body b{color:var(--text);font-weight:600}
 .swatch{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:8px;vertical-align:0}
 .tie{font-family:var(--mono);font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--dimmer);
      border-left:2px solid var(--line);padding:6px 0 6px 11px;margin:0}
+
+/* ---------- task tabs (progressive enhancement) ---------- */
+.tabs{display:none;gap:6px;margin-top:24px;flex-wrap:wrap}
+.js-tabs .tabs{display:flex}
+.tab{font-family:var(--mono);font-size:11px;letter-spacing:.07em;text-transform:uppercase;
+     color:var(--dim);background:var(--panel);border:1px solid var(--line);border-radius:4px;
+     padding:8px 15px;cursor:pointer;transition:color .12s,border-color .12s,background .12s}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--text);border-color:var(--signal);background:color-mix(in srgb,var(--signal) 8%,transparent)}
+.tab:focus-visible{outline:2px solid var(--signal);outline-offset:2px}
+.tab-panel{display:block}
+.js-tabs .tab-panel{display:none}
+.js-tabs .tab-panel.active{display:block}
+.panel-sub{font-family:var(--mono);font-size:11px;letter-spacing:.03em;color:var(--dim);margin:18px 0 -6px}
+/* score sparkline (added by JS, width ∝ score within each task) */
+.lb .bar{display:block;height:3px;border-radius:2px;margin:5px 0 2px;
+         background:color-mix(in srgb,var(--signal) 50%,transparent)}
+.lb tr.lead .bar{background:color-mix(in srgb,var(--signal) 82%,transparent)}
 
 /* ---------- update feed ---------- */
 .feed{margin-top:26px;border-left:1px solid var(--line);padding-left:0}
