@@ -23,6 +23,53 @@
     <h1>Global leaderboard</h1>
     <p class="standfirst">Every open-source robot policy, put in charge of the <b>same humanoid</b>, on the <b>same tasks</b>, with an <b>identical adaptation budget</b> — scored from auditable simulated rollouts. One number, ranked, with error bars.</p>
 
+    <div class="master">
+      <div class="master-head">
+        <span class="master-title">Combined score — the G1 suite</span>
+        <span class="master-sub">mean placement progress across all three tasks · 0–100</span>
+      </div>
+
+      <div class="mbar-row">
+        <div class="mbar-label"><span class="swatch" style="background:var(--groot)"></span>GR00T N1.7 ⚑<sup>†</sup></div>
+        <div class="mbar-track">
+          <div class="mbar-fill" style="width:84.2%;background:var(--groot)"></div>
+          <div class="mbar-whisker" style="left:74.7%;width:19.0%"></div>
+        </div>
+        <div class="mbar-val">23.6<span class="mbar-ci">± 2.7</span></div>
+      </div>
+
+      <div class="mbar-row">
+        <div class="mbar-label"><span class="swatch" style="background:var(--act)"></span>ACT</div>
+        <div class="mbar-track">
+          <div class="mbar-fill" style="width:45.0%;background:var(--act)"></div>
+          <div class="mbar-whisker" style="left:40.0%;width:9.9%"></div>
+        </div>
+        <div class="mbar-val">12.6<span class="mbar-ci">± 1.4</span></div>
+      </div>
+
+      <div class="mbar-row">
+        <div class="mbar-label"><span class="swatch" style="background:var(--g2)"></span>WALL-OSS<sup>†</sup></div>
+        <div class="mbar-track">
+          <div class="mbar-fill" style="width:39.6%;background:var(--g2)"></div>
+          <div class="mbar-whisker" style="left:34.2%;width:10.8%"></div>
+        </div>
+        <div class="mbar-val">11.1<span class="mbar-ci">± 1.5</span></div>
+      </div>
+
+      <div class="mbar-row">
+        <div class="mbar-label"><span class="swatch" style="background:var(--g1)"></span>SmolVLA</div>
+        <div class="mbar-track">
+          <div class="mbar-fill" style="width:36.8%;background:var(--g1)"></div>
+          <div class="mbar-whisker" style="left:31.6%;width:10.2%"></div>
+        </div>
+        <div class="mbar-val">10.3<span class="mbar-ci">± 1.4</span></div>
+      </div>
+
+      <p class="master-note"><b style="color:var(--dim)">Combined</b> = the mean of a policy's pick-and-place, stack and cylinder scores (each 0–100 placement progress, equal weight). Only the four policies run on all three tasks appear here — and <b style="color:var(--dim)">ACT, the from-scratch control, ranks second overall</b>, ahead of every general VLA. π0.5 joins when its stack/cylinder runs finish; OpenVLA-OFT and RDT-1B are pick-and-place-only for now. <sup>†</sup> includes a provisional partial-checkpoint cylinder score.</p>
+    </div>
+
+    <p class="detail-label">Per-task detail</p>
+
     <div class="tabs" role="tablist">
       <button class="tab active" data-task="redblock" role="tab" aria-selected="true">Pick-and-place</button>
       <button class="tab" data-task="stack" role="tab" aria-selected="false">Stack</button>
