@@ -65,7 +65,36 @@
         <div class="mbar-val">10.3<span class="mbar-ci">± 1.4</span></div>
       </div>
 
-      <p class="master-note"><b style="color:var(--dim)">Combined</b> = the mean of a policy's pick-and-place, stack and cylinder scores (each 0–100 placement progress, equal weight). Only the four policies run on all three tasks appear here — and <b style="color:var(--dim)">ACT, the from-scratch control, ranks second overall</b>, ahead of every general VLA. π0.5 joins when its stack/cylinder runs finish; OpenVLA-OFT and RDT-1B are pick-and-place-only for now. <sup>†</sup> includes a provisional partial-checkpoint cylinder score.</p>
+      <div class="master-divider">Pick-and-place only · full-suite score pending</div>
+
+      <div class="mbar-row provisional">
+        <div class="mbar-label"><span class="swatch" style="background:var(--g3)"></span>π0.5</div>
+        <div class="mbar-track">
+          <div class="mbar-fill prov" style="width:81.6%;background-color:var(--g3)"></div>
+          <div class="mbar-whisker" style="left:71.6%;width:20.0%"></div>
+        </div>
+        <div class="mbar-val">22.9<span class="mbar-ci">± 2.8</span></div>
+      </div>
+
+      <div class="mbar-row provisional">
+        <div class="mbar-label"><span class="swatch" style="background:var(--g4)"></span>OpenVLA-OFT</div>
+        <div class="mbar-track">
+          <div class="mbar-fill prov" style="width:80.7%;background-color:var(--g4)"></div>
+          <div class="mbar-whisker" style="left:64.6%;width:32.1%"></div>
+        </div>
+        <div class="mbar-val">22.6<span class="mbar-ci">± 4.5</span></div>
+      </div>
+
+      <div class="mbar-row provisional">
+        <div class="mbar-label"><span class="swatch" style="background:var(--g5)"></span>RDT-1B</div>
+        <div class="mbar-track">
+          <div class="mbar-fill prov" style="width:74.5%;background-color:var(--g5)"></div>
+          <div class="mbar-whisker" style="left:58.1%;width:32.9%"></div>
+        </div>
+        <div class="mbar-val">20.9<span class="mbar-ci">± 4.6</span></div>
+      </div>
+
+      <p class="master-note"><b style="color:var(--dim)">Combined</b> = the mean of a policy's pick-and-place, stack and cylinder scores (each 0–100 placement progress, equal weight). Only the four <b style="color:var(--dim)">solid</b> bars ran all three tasks; <b style="color:var(--dim)">ACT, the from-scratch control, ranks second overall</b> among them. The <b style="color:var(--dim)">hatched</b> bars below the divider are pick-and-place only — one comparatively easy task, <b style="color:var(--dim)">not</b> a combined score — so expect them to drop once they face stacking, where every policy but GR00T scores ~0. π0.5's real combined bar lands when its stack/cylinder runs finish (~hours); OpenVLA-OFT and RDT-1B have not been run on the other two tasks. <sup>†</sup> includes a provisional partial-checkpoint cylinder score.</p>
     </div>
 
     <p class="detail-label">Per-task detail</p>
