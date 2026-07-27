@@ -50,10 +50,10 @@
 
   <section>
     <h2>3 · Equal adaptation budget</h2>
-    <p class="body">Every policy is fine-tuned on the <b>same 216 demonstrations</b> for the <b>same 20,000 steps</b>, then evaluated on the <b>same 150 seeds</b> with the <b>same 600-step episode limit</b>. No per-model hyperparameter search. No extra data for the big models.</p>
+    <p class="body">Every policy is fine-tuned on the <b>same 216 demonstrations</b> for the <b>same 20,000 steps</b>, then evaluated on the <b>same seeds</b> with the <b>same episode limit within each task</b> — 600 steps for pick-and-place, 900 for the harder stack and cylinder tasks. The horizon may differ <i>between</i> tasks but is identical across every policy <i>within</i> a task. No per-model hyperparameter search. No extra data for the big models.</p>
     <p class="body">The from-scratch ACT control gets 60,000 steps rather than 20,000, because it starts from random weights instead of a pre-trained checkpoint. That is a deliberate handicap <i>against</i> the pre-trained models' argument, and it still does not save three of them.</p>
     <div class="call">
-      <b>Horizon equality is enforced, not assumed.</b> An early run gave one policy 450-step episodes against 600 for everyone else — 25% less clock on a task whose dominant failure is running out of time. The result was invalid and was re-run. Episode horizon is now recorded per policy and checked automatically when results are aggregated.
+      <b>Horizon equality is enforced, not assumed.</b> An early run gave one policy 450-step episodes against 600 for everyone else — 25% less clock on a task whose dominant failure is running out of time. It was re-run. The same check later caught GR00T and WALL-OSS running 600-step stack/cylinder episodes against 900 for the other policies; both were re-run at 900, which lifted GR00T's cylinder score from 24.9 to 43.2 and surfaced its first non-zero success. Episode horizon is recorded per policy and checked automatically when results are aggregated.
     </div>
   </section>
 
