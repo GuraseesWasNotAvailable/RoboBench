@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How we grade data — RoboBench</title>
+<meta name="description" content="The reference model, the frame-matching rule, the scoring function and the statistical standards behind RoboBench's dataset benchmark.">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div class="wrap">
+
+  <nav class="nav">
+    <a class="brand" href="index.html">RoboBench</a>
+    <a class="l" href="models.html">Models</a>
+    <a class="l" href="datasets.html">Datasets</a>
+    <a class="l" href="methodology-datasets.html" aria-current="page">How we grade data</a>
+    <a class="l" href="about.html">What we do</a>
+  </nav>
+
+  <header>
+    <div class="kicker">Methodology · datasets</div>
+    <h1>How we grade a dataset</h1>
+    <p class="standfirst">The policy benchmark fixes the data and varies the model. This one fixes <b>everything except the data</b>: same model, same recipe, same training run, same seeds, same evaluation scenes. A dataset's grade is the performance of a policy trained on it — because for demonstration data, that is the only definition of quality that isn't a guess.</p>
+  </header>
+
+  <section>
+    <h2>1 · Why a dataset can only be graded by training on it</h2>
+    <p class="body">Data-quality tooling for images and text scores things you can see without a model: duplicates, corrupt files, label disagreement. A robot demonstration has <b>no label to be wrong</b>. Its quality is a property of the trajectory — whether the grasp was decisive, whether the path was direct, whether the episode shows the task being done or being fumbled — and none of that has a fixed relationship to downstream performance that you can assert in advance.</p>
+    <p class="body">So the scoring function is the expensive one: <b>train a fixed reference policy on the corpus and evaluate it.</b> Everything cheap on this site — the six-property screen on the results page — is validated <i>against</i> that measurement, not substituted for it.</p>
+    <div class="call">
+      <b>This is the whole reason the benchmark is defensible.</b> Anyone can compute heuristics over a dataset. The claim that a given heuristic predicts what a trained policy will do requires a corpus of (dataset → trained policy → measured score) observations, and that corpus only exists if someone pays for the training runs. It is also why the grades improve as more datasets are graded.
+    </div>
+  </section>
+
+  <section>
+    <h2>2 · One model for every corpus</h2>
+    <p class="body">Every corpus is scored with <b>GR00T N1.7-3B</b>, fine-tuned with an identical recipe on a single <b>NVIDIA L4 24 GB</b>. No per-corpus hyperparameter search and no re-tuning.</p>
+    <p class="body"><b>One per-corpus choice is made, and it is the one worth disclosing.</b> The corpora overfit at different rates — PH peaks at 500 steps and is 13 points worse by 1,000 — so the checkpoint scored is the best of the four on that corpus's learning curve. That selection happens on a <i>separate</i> seed set and the winner is re-scored on fresh seeds, which stops it leaking into the reported number, but it is still a per-corpus decision and calling the protocol "identical" without it would be false. MH's reported 24.20 comes from a 250-step checkpoint, a quarter of the nominal budget.</p>
+    <div class="tbl">
+      <table>
+        <tr><th>Component</th><th>Specification</th></tr>
+        <tr><td class="name">Reference policy</td><td>GR00T N1.7-3B, identical fine-tuning recipe for every corpus</td></tr>
+        <tr><td class="name">Task</td><td>RoboMimic <span style="font-family:var(--mono)">Lift</span> in robosuite</td></tr>
+        <tr><td class="name">Training budget</td><td>A 1,000-step run per corpus, checkpointed every 250 steps</td></tr>
+        <tr><td class="name">Checkpoint scored</td><td>Best of {250, 500, 750, 1000} per corpus, chosen on seeds 100000+ and re-scored on fresh seeds 200000+ — <b>PH 500 · MH 250 · MG 500</b></td></tr>
+        <tr><td class="name">Evaluation</td><td>100 held-out scenes per model, paired seeds across arms</td></tr>
+        <tr><td class="name">Hardware</td><td>Single NVIDIA L4 24 GB</td></tr>
+      </table>
+    </div>
+    <p class="body">The bias this introduces is stated rather than hidden: <b>a grade is measured through one model.</b> A corpus that suits GR00T's action representation and fails another architecture would be scored generously here. Adding a second reference model is the top item on the results page's what's-next list for exactly this reason.</p>
+  </section>
+
+  <section>
+    <h2>3 · Frames, not episodes</h2>
+    <p class="body">Corpora are matched on <b>total frames</b> — 9,666 / 9,698 / 9,750, within 0.9% — and never on episode count. This is the single most important design choice on this page.</p>
+    <p class="body">Episode-matching silently confounds quality with volume. A careless operator produces longer episodes, so 100 careless episodes carry far more training signal than 100 clean ones. Matching episodes would let a bad corpus win on sheer quantity and would make "quality" unmeasurable. Matching frames means every corpus gets the same amount of gradient, and the only thing left varying is <b>what those frames depict</b>.</p>
+    <div class="call quiet">
+      The same rule is applied to the curation experiment, where the two arms are frame-matched to <b>0.03%</b>. An arm that wins because it was fed more data has not demonstrated anything about selection.
+    </div>
+  </section>
+
+  <section>
+    <h2>4 · How the score works</h2>
+    <p class="body">Binary success is too rare to rank on — the worst corpus here scores 0 successes in 100 attempts, and so does a random policy. Ranking on a metric where two very different things both score zero is not ranking. So the score is robosuite's <b>staged physics progress</b>, which reports how far into the task the policy actually got:</p>
+    <div class="call quiet" style="font-family:var(--mono);font-size:13px">
+      reach → 0–30 &nbsp;·&nbsp; grasp → jumps to 60 &nbsp;·&nbsp; lift height → 60–100
+    </div>
+    <p class="body">The stages come from simulator physics, not from a judge model or a human rater, so the number is a deterministic function of the logged rollout. Re-scoring against a future metric requires no GPU and no re-run.</p>
+
+    <h3>Conditioned transitions, not just the total</h3>
+    <p class="body">The scalar ranks corpora; it does not say what to do about one. So each stage is also reported <b>conditioned on the previous stage succeeding</b> — grasp given reach, lift given grasp. That converts a score into a funnel and locates the constriction. On this task it showed that lifting never fails once an object is held, and that everything a policy cannot do is concentrated in closing the fingers.</p>
+
+    <h3>The screen is validated, not assumed</h3>
+    <p class="body">The six cheap properties — success rate, gripper transitions, jerk, path efficiency, grasp timing, episode length — are computed on the raw corpus and then checked against what the trained policies actually did. Path efficiency, for instance, carries an odds ratio of <b>5.42 (2.49 – 11.81)</b> for episode success. A property that failed this check would be dropped, however intuitive it sounded.</p>
+  </section>
+
+  <section>
+    <h2>5 · Statistics and when we call it inconclusive</h2>
+    <p class="body">Means carry <b>bootstrap 95% intervals</b>. Rates carry <b>Wilson intervals</b>, which behave correctly near 0% and 100% where the normal approximation does not — and several cells here sit at exactly 0%. Where several behaviours are tested at once, p-values carry a <b>Benjamini–Hochberg</b> correction, because testing six hypotheses and reporting the best one is how noise gets published.</p>
+    <p class="body">The curation A/B was specified in full before it ran — arms, checkpoint, step count, learning rate, seeds and sample size. The diagnostic analyses were exploratory, and are labelled as such: two early findings (spatial coverage, and an unnormalised gripper-oscillation metric) did not survive a larger sample or a length correction.</p>
+    <div class="call">
+      <b>The rule we actually apply.</b> The curation experiment — the forward test of the whole screen — moved every measure in the predicted direction and won 14 scenes to 6. Its 95% interval on the difference runs from <b>−7.53 to +28.94</b> at n = 20, so it is reported as <b>inconclusive</b> on the results page and in the summary, in the same size type as the encouraging numbers. An interval that crosses zero is not a small effect; it is an unresolved question.
+    </div>
+  </section>
+
+  <section>
+    <h2>6 · The cross-dataset rule</h2>
+    <p class="body">A diagnosis produced from one corpus is not safe to act on. Grading three corpora at once makes a distinction that single-dataset analysis structurally cannot:</p>
+    <ul class="body">
+      <li><b>A bottleneck that tracks the data source</b> — reaching, at 0.97 / 0.73 / 0.17 across PH / MH / MG — is a data problem. Better demonstrations fix it.</li>
+      <li><b>A bottleneck that sits in the same place regardless of source</b> — grasping, at 0.17 and 0.14 for two corpora that are both 100% successful, where the difference is not resolvable at this sample size (+0.04, interval −0.18 to +0.23, p = 0.73) — is a candidate <b>recipe</b> problem, worth testing as one before a collection budget is spent. A failure to detect a difference is not proof of equivalence; what earns the reading here is that the recipe fix then worked.</li>
+    </ul>
+    <p class="body">On this task the second case was worth 5.9 points, recovered by changing one inference-time parameter and retraining nothing. Read from PH alone, the same evidence would have prescribed collecting more grasp demonstrations — an expensive answer to a question that was free.</p>
+    <div class="call quiet">
+      This is why a dataset grade is reported alongside a <b>verdict on whether data is the right lever at all</b>. A grading service that always concludes "collect more data" is selling collection, not measurement.
+    </div>
+  </section>
+
+  <section>
+    <h2>7 · What we deliberately do not measure</h2>
+    <ul class="body">
+      <li><b>Generalisation across tasks.</b> One task, one object. Whether the acceptance thresholds hold for a task with a different dominant failure mode is untested, and it is the most likely thing to break.</li>
+      <li><b>Model-independence.</b> One reference policy. A grade measured through GR00T N1.7 may not be the grade another architecture would assign.</li>
+      <li><b>Real hardware.</b> Simulation only. Nothing here says how a corpus behaves on a physical robot.</li>
+      <li><b>Scale.</b> Roughly 9,700 frames per corpus. Whether the ordering survives at 100× the data — where a noisy corpus may become tolerable — is unknown.</li>
+      <li><b>Provenance and licensing.</b> We grade what a corpus teaches, not whether it was lawfully collected or carries consent for the people in it.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>8 · Reproducibility</h2>
+    <p class="body">Evaluation uses <b>paired seeds</b> across arms, with determinism verified rather than assumed — arms see identical seeds — 100 held-out scenes for the corpus comparison, 20 paired scenes for the curation A/B — so a difference between arms cannot be a difference in scene difficulty. Roughly <b>1,340 rollouts</b> are recorded across <b>39 evaluation records</b>, per-episode and per-step.</p>
+    <div class="tbl">
+      <table>
+        <tr><th>Recorded</th><th>Why</th></tr>
+        <tr><td class="name">Per-episode results</td><td>Bootstrap intervals and per-scene pairing between arms</td></tr>
+        <tr><td class="name">Per-step traces</td><td>Path efficiency, jerk, closest approach, gripper switching</td></tr>
+        <tr><td class="name">Stage histograms</td><td>The conditioned funnel — where the policy stops</td></tr>
+        <tr><td class="name">Training loss</td><td>Rules out undertraining as an explanation for a bad grade</td></tr>
+        <tr><td class="name">Corpus statistics</td><td>The six screen properties, recomputable from the raw dataset</td></tr>
+      </table>
+    </div>
+    <div class="call">
+      <b>A discarded first version.</b> The original harness scored conformance rather than closed-loop capability, and returned indistinguishable noise across every data mix. It was rebuilt on real simulated rollouts and the earlier numbers were thrown away. It is recorded here because a benchmark that has never found itself broken has probably not looked.
+    </div>
+    <a class="cta" href="datasets.html">See the results this produced →</a>
+  </section>
+
+  <footer>
+    <b>RoboBench</b> · dataset methodology, first published 27 July 2026.
+    <div class="meta">
+      Underlying study, per-episode CSVs and the full methodology document:
+      <a href="https://github.com/shaikzaidhaaris/vla-data-quality">github.com/shaikzaidhaaris/vla-data-quality</a><br>
+      Changes to scoring are announced on the <a href="index.html">front page</a> under Latest updates.
+    </div>
+  </footer>
+
+</div>
+</body>
+</html>

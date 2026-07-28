@@ -3,6 +3,7 @@
   --text:#E6E9EE; --dim:#868F9D; --dimmer:#5A6472;
   --signal:#E8A33D; --ok:#5FB49C; --mid:#5B7089; --bad:#C4635C;
   --groot:#4478d0; --act:#2b8a2b; --g1:#9d9d97; --g2:#c2c2ba; --g3:#82827c; --g4:#707069; --g5:#9a9a92;
+  --hatch:rgba(255,255,255,.18);
   --mono:ui-monospace,"SF Mono","Cascadia Mono","Roboto Mono",Consolas,monospace;
   --sans:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
 }
@@ -11,17 +12,24 @@
     --bg:#F7F7F5; --panel:#FFFFFF; --panel-2:#F1F2F0; --line:#DCDEDA; --line-soft:#E7E8E5;
     --text:#14181D; --dim:#5D6672; --dimmer:#8A93A0;
     --signal:#B87516; --ok:#2F7F6B; --mid:#5B7089; --bad:#A8453E;
+    /* chart series need darkening too — the dark-tuned greys vanish on white */
+    --groot:#2F5DA8; --act:#1F6B1F; --g1:#6F6F68; --g2:#8B8B83; --g3:#5E5E58; --g4:#4F4F49; --g5:#7A7A72;
+    --hatch:rgba(0,0,0,.22);
   }
 }
 :root[data-theme="dark"]{
   --bg:#0E1116; --panel:#161A21; --panel-2:#1C212A; --line:#262C36; --line-soft:#1E242D;
   --text:#E6E9EE; --dim:#868F9D; --dimmer:#5A6472;
-  --signal:#E8A33D; --ok:#5FB49C; --bad:#C4635C;
+  --signal:#E8A33D; --ok:#5FB49C; --mid:#5B7089; --bad:#C4635C;
+  --groot:#4478d0; --act:#2b8a2b; --g1:#9d9d97; --g2:#c2c2ba; --g3:#82827c; --g4:#707069; --g5:#9a9a92;
+  --hatch:rgba(255,255,255,.18);
 }
 :root[data-theme="light"]{
   --bg:#F7F7F5; --panel:#FFFFFF; --panel-2:#F1F2F0; --line:#DCDEDA; --line-soft:#E7E8E5;
   --text:#14181D; --dim:#5D6672; --dimmer:#8A93A0;
-  --signal:#B87516; --ok:#2F7F6B; --bad:#A8453E;
+  --signal:#B87516; --ok:#2F7F6B; --mid:#5B7089; --bad:#A8453E;
+  --groot:#2F5DA8; --act:#1F6B1F; --g1:#6F6F68; --g2:#8B8B83; --g3:#5E5E58; --g4:#4F4F49; --g5:#7A7A72;
+  --hatch:rgba(0,0,0,.22);
 }
 
 *{box-sizing:border-box;margin:0;padding:0}
@@ -128,12 +136,21 @@ ul.body b{color:var(--text);font-weight:600}
 .master-divider{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;
                 color:var(--dimmer);margin:22px 0 8px;padding-top:15px;border-top:1px dashed var(--line)}
 .mbar-fill.prov{opacity:.6;
-  background-image:repeating-linear-gradient(45deg,rgba(0,0,0,0) 0 4px,rgba(255,255,255,.18) 4px 8px)}
+  background-image:repeating-linear-gradient(45deg,rgba(0,0,0,0) 0 4px,var(--hatch) 4px 8px)}
 .mbar-row.provisional .mbar-val{color:var(--dim);font-weight:650}
 .mbar-row.provisional .mbar-label{color:var(--dim)}
 .detail-label{font-family:var(--mono);font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;
               color:var(--dimmer);margin:30px 0 -6px}
-@media (max-width:560px){ .mbar-row{grid-template-columns:84px 1fr 72px;gap:10px} .mbar-label{font-size:12px} }
+@media (max-width:560px){
+  /* an 84px label column truncates every real model name — give the label its own row */
+  .mbar-row{grid-template-columns:1fr auto;grid-template-areas:"label val" "track track";gap:4px 10px}
+  .mbar-label{grid-area:label;font-size:12.5px;white-space:normal;overflow:visible}
+  .mbar-val{grid-area:val}
+  .mbar-track{grid-area:track;margin-bottom:6px}
+  .mbar-whisker{min-width:6px}
+  .duo .mini .r{grid-template-columns:1fr 78px;gap:8px;font-size:12.5px}
+  .duo .col{padding:18px 16px 16px}
+}
 
 /* ---------- update feed ---------- */
 .feed{margin-top:26px;border-left:1px solid var(--line);padding-left:0}
@@ -156,7 +173,8 @@ ul.body b{color:var(--text);font-weight:600}
 /* ---------- cards / callouts ---------- */
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-top:24px}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:5px;padding:18px 20px}
-.card h4{font-size:14.5px;font-weight:650;letter-spacing:-.01em}
+.card h3,
+.card h4{font-size:14.5px;font-weight:650;letter-spacing:-.01em;margin-top:0}
 .card p{color:var(--dim);font-size:13.5px;margin-top:7px}
 .card .big{font-family:var(--mono);font-size:22px;font-weight:700;color:var(--signal);letter-spacing:-.02em}
 
@@ -178,9 +196,58 @@ ul.body b{color:var(--text);font-weight:600}
 .tbl td{padding:12px 15px;border-bottom:1px solid var(--line-soft);color:var(--dim)}
 .tbl tr:last-child td{border-bottom:0}
 .tbl td.m{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
-.tbl td.name{color:var(--text);font-weight:600;white-space:nowrap}
+.tbl td.name,
+.tbl th.name{color:var(--text);font-weight:600;white-space:nowrap;text-align:left;
+             font-family:var(--sans);font-size:13.5px;letter-spacing:0;text-transform:none;
+             padding:12px 15px;border-bottom:1px solid var(--line-soft)}
+.tbl tr:last-child th.name{border-bottom:0}
+/* visually-hidden: present for screen readers, absent on screen */
+.vh{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
+    clip:rect(0 0 0 0);white-space:nowrap;border:0}
 
 footer{padding:36px 0 0;border-top:1px solid var(--line);color:var(--dim);font-size:14px;margin-top:20px}
 footer b{color:var(--text)}
 .meta{font-family:var(--mono);font-size:11px;color:var(--dimmer);margin-top:20px;line-height:1.85;letter-spacing:.01em}
 .meta a{color:var(--dim)}
+
+/* ---------- landing: the two-column benchmark split ---------- */
+.duo{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(330px,100%),1fr));gap:18px;margin-top:30px}
+.duo .col{background:var(--panel);border:1px solid var(--line);border-radius:6px;
+          padding:24px 24px 20px;display:flex;flex-direction:column}
+.duo .col.models{border-top:3px solid var(--groot)}
+.duo .col.datasets{border-top:3px solid var(--ok)}
+.duo .col .kicker{font-size:10px;letter-spacing:.14em}
+.duo .col h3{font-size:22px;font-weight:750;margin-top:9px;letter-spacing:-.022em}
+.duo .col p.d{color:var(--dim);font-size:14px;margin-top:10px;max-width:46ch}
+.duo .col p.d b{color:var(--text);font-weight:600}
+.q,
+.duo .q{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;
+        color:var(--dimmer);margin-top:16px}
+.duo .mini{margin-top:9px;border-top:1px solid var(--line-soft);padding-top:12px}
+.duo .mini .r{display:grid;grid-template-columns:1fr 92px;gap:10px;align-items:center;
+              padding:5px 0;font-size:13.5px}
+.duo .mini .r .n{color:var(--dim);display:flex;align-items:center;gap:8px;min-width:0}
+.duo .mini .r .n .t{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.duo .mini .r.top .n{color:var(--text);font-weight:600}
+.duo .mini .r.floor .n,.duo .mini .r.floor .v{color:var(--dimmer)}
+.duo .mini .r .v{font-family:var(--mono);font-variant-numeric:tabular-nums;text-align:right;
+                 color:var(--text);font-size:13px}
+.duo .mini .r .v .u{color:var(--dimmer);font-size:11px;margin-left:3px}
+.duo .foot{font-size:12.5px;color:var(--dimmer);margin-top:14px;line-height:1.6}
+.duo .foot b{color:var(--dim);font-weight:600}
+.duo .links{margin-top:auto;padding-top:18px;display:flex;gap:16px;flex-wrap:wrap;font-size:13px}
+.duo .links a{color:var(--signal);text-decoration:none;border-bottom:1px solid transparent}
+.duo .links a:hover{border-bottom-color:var(--signal)}
+
+/* ---------- dataset pages: stage ladder ---------- */
+.ladder{margin-top:22px;display:grid;gap:8px}
+.ladder .st{display:grid;grid-template-columns:132px 1fr 58px;gap:12px;align-items:center;font-size:13.5px}
+.ladder .st .lb2{color:var(--dim)}
+.ladder .st .tr{height:9px;background:var(--panel-2);border:1px solid var(--line-soft);
+                border-radius:2px;overflow:hidden}
+.ladder .st .fl{height:100%;background:var(--ok);opacity:.85}
+.ladder .st .vl{font-family:var(--mono);font-size:12.5px;font-variant-numeric:tabular-nums;
+                text-align:right;color:var(--text)}
+.ladder .st.gate .fl{background:var(--bad)}
+.ladder .st.gate .lb2{color:var(--text);font-weight:600}
+@media (max-width:560px){ .ladder .st{grid-template-columns:100px 1fr 52px;gap:9px} }

@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Datasets — RoboBench</title>
+<meta name="description" content="One task, one model, three demonstration sources, matched frame budgets. What in a training dataset actually makes a robot policy better.">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div class="wrap">
+
+  <nav class="nav">
+    <a class="brand" href="index.html">RoboBench</a>
+    <a class="l" href="models.html">Models</a>
+    <a class="l" href="datasets.html" aria-current="page">Datasets</a>
+    <a class="l" href="methodology-datasets.html">How we grade data</a>
+    <a class="l" href="about.html">What we do</a>
+  </nav>
+
+  <section class="hero">
+    <div class="kicker">Benchmark 02 · Data · updated 27 Jul 2026</div>
+    <h1>Which data?</h1>
+    <p class="standfirst">The model leaderboard holds the data fixed and varies the policy. This one does the opposite: <b>one task, one model, one recipe</b>, and three recordings of the same job that differ only in <b>who or what produced them</b>. Frame budgets matched, so what is measured is quality, not volume.</p>
+
+    <div class="master">
+      <div class="master-head">
+        <span class="master-title">Mean progress by data source</span>
+        <span class="master-sub">GR00T N1.7 · RoboMimic Lift · 100 held-out scenes per model · 0–100</span>
+      </div>
+
+      <div class="mbar-row">
+        <div class="mbar-label"><span class="swatch" style="background:var(--ok)"></span>PH · one expert</div>
+        <div class="mbar-track">
+          <div class="mbar-fill" style="width:69.7%;background-color:var(--ok)"></div>
+          <div class="mbar-whisker" style="left:57.4%;width:26.0%"></div>
+        </div>
+        <div class="mbar-val">34.83<span class="mbar-ci">28.7–41.7</span></div>
+      </div>
+
+      <div class="mbar-row">
+        <div class="mbar-label"><span class="swatch" style="background:var(--mid)"></span>MH · six operators</div>
+        <div class="mbar-track">
+          <div class="mbar-fill" style="width:48.4%;background-color:var(--mid)"></div>
+          <div class="mbar-whisker" style="left:38.6%;width:21.2%"></div>
+        </div>
+        <div class="mbar-val">24.20<span class="mbar-ci">19.3–29.9</span></div>
+      </div>
+
+      <div class="mbar-row">
+        <div class="mbar-label"><span class="swatch" style="background:var(--bad)"></span>MG · machine</div>
+        <div class="mbar-track">
+          <div class="mbar-fill" style="width:9.7%;background-color:var(--bad)"></div>
+          <div class="mbar-whisker" style="left:7.6%;width:4.4%"></div>
+        </div>
+        <div class="mbar-val">4.85<span class="mbar-ci">3.8–6.0</span></div>
+      </div>
+
+      <div class="mbar-row">
+        <div class="mbar-label"><span class="swatch" style="background:var(--dimmer)"></span>Random floor</div>
+        <div class="mbar-track">
+          <div class="mbar-fill" style="width:5.5%;background-color:var(--dimmer)"></div>
+          <div class="mbar-whisker" style="left:4.0%;width:3.0%"></div>
+        </div>
+        <div class="mbar-val">2.74<span class="mbar-ci">2.0–3.5</span></div>
+      </div>
+
+      <p class="master-note"><b style="color:var(--dim)">Same model, same recipe, same 1,000-step training run, same held-out evaluation seeds.</b> One per-corpus choice is made and disclosed: the checkpoint scored is the best of {250, 500, 750, 1000} for that corpus, picked on a separate seed set and re-scored on fresh ones — <b style="color:var(--dim)">PH @500, MH @250, MG @500</b>. MG produces <b style="color:var(--dim)">zero successes in 100 attempts</b>, indistinguishable from a random policy on success rate (Wilson upper bound 3.7%); on mean progress it sits just above the floor rather than on it — 3.8–6.0 against 2.0–3.5. The best configuration found anywhere in this study, 43.83, is <b style="color:var(--dim)">not</b> plotted here: it is a 20-scene annealing experiment whose interval crosses zero, and it belongs in <a href="#curation" style="color:var(--signal);text-decoration:none">§6</a> with its caveat attached, not on the hero chart.</p>
+    </div>
+
+    <p class="scorekey"><b>Progress</b> = robosuite's staged task progress, 0–100: reaching scores 0–30, a completed grasp jumps to 60, and lift height interpolates 60–100. <b>Interval</b> = 95% bootstrap. <a href="methodology-datasets.html">Full protocol →</a></p>
+
+    <div class="call">
+      <b>The headline.</b> Three corpora recorded on the same task, matched to within 0.9% on frame count, produce policies spanning <b>34.83 to 4.85</b>. Nothing about the model, the recipe or the evaluation changed. On this task the source of the demonstrations mattered more than the differences between the five general policies that sit inside each other's error bars on our <a href="models.html" style="color:var(--signal);text-decoration:none">policy leaderboard</a> — though that board runs a different robot, task and scoring function, so the two spreads are <b>not</b> directly comparable and no ratio between them is claimed here.
+    </div>
+  </section>
+
+  <section>
+    <h2>1 · Three sources, one task, matched budgets</h2>
+    <p class="body">All three corpora are recordings of RoboMimic <b>Lift</b>. They are matched on <b>frames</b>, not episodes — episode-matching would confound quality with volume, because a sloppy operator produces longer episodes and therefore more training signal for the same nominal count.</p>
+
+    <div class="tbl">
+      <table>
+        <caption class="vh">Training corpora, matched on total frames</caption>
+        <thead>
+        <tr><th scope="col">Source</th><th scope="col">Episodes used</th><th scope="col">Frames</th><th scope="col">Demos that succeed</th><th scope="col">Median length</th></tr>
+        </thead>
+        <tr><th scope="row" class="name">PH — one skilled teleoperator</th><td class="m">200</td><td class="m">9,666</td><td class="m">100%</td><td class="m">48</td></tr>
+        <tr><th scope="row" class="name">MH — six operators, mixed skill</th><td class="m">94</td><td class="m">9,698</td><td class="m">100%</td><td class="m">96</td></tr>
+        <tr><th scope="row" class="name">MG — machine generated (RL agent)</th><td class="m">65</td><td class="m">9,750</td><td class="m">26.7%</td><td class="m">150</td></tr>
+      </table>
+    </div>
+
+    <p class="body">Read the last two columns together. To supply the same 9,700 frames, MG needs a third as many episodes as PH because each one runs three times as long — and only a quarter of them finish the task at all. <b>The corpus is mostly a recording of failure.</b></p>
+    <p class="body">"Episodes used" is the frame-matched slice, not the size of the underlying recording. The MH recording is larger than the 94 episodes drawn here, which is what makes the selection experiment in <a href="#curation">§6</a> possible.</p>
+  </section>
+
+  <section>
+    <h2>2 · The result — expert beats mixed beats machine</h2>
+
+    <div class="tbl">
+      <table>
+        <caption class="vh">Policy performance by training corpus, 100 held-out scenes each</caption>
+        <thead>
+        <tr><th scope="col">Trained on</th><th scope="col">Checkpoint</th><th scope="col">Mean progress</th><th scope="col">95% interval</th><th scope="col">Success</th></tr>
+        </thead>
+        <tr><th scope="row" class="name">PH expert</th><td class="m">500</td><td class="m">34.83</td><td class="m">28.7 – 41.7</td><td class="m">15 / 100</td></tr>
+        <tr><th scope="row" class="name">MH six operators</th><td class="m">250</td><td class="m">24.20</td><td class="m">19.3 – 29.9</td><td class="m">10 / 100</td></tr>
+        <tr><th scope="row" class="name">MG machine</th><td class="m">500</td><td class="m">4.85</td><td class="m">3.8 – 6.0</td><td class="m">0 / 100</td></tr>
+        <tr><th scope="row" class="name">Random floor</th><td class="m">—</td><td class="m">2.74</td><td class="m">2.0 – 3.5</td><td class="m">0 / 100</td></tr>
+      </table>
+    </div>
+
+    <p class="body">The ordering is PH &gt; MH &gt; MG and the PH–MG gap is not close enough to argue about. The interesting row is the last one: <b>9,750 frames of machine-generated demonstration buy about two points of progress over a policy that does nothing, and zero successes.</b></p>
+
+    <h3>What actually differs in the training data</h3>
+    <p class="body">Every one of these is measurable on the raw corpus, before any GPU is touched:</p>
+
+    <div class="tbl">
+      <table>
+        <caption class="vh">Corpus statistics by data source</caption>
+        <thead>
+        <tr><th scope="col">Property of the demonstrations</th><th scope="col">PH</th><th scope="col">MH</th><th scope="col">MG</th></tr>
+        </thead>
+        <tr><th scope="row" class="name">Demonstrations that succeed</th><td class="m">100%</td><td class="m">100%</td><td class="m">26.7%</td></tr>
+        <tr><th scope="row" class="name">Gripper transitions per episode</th><td class="m">1.00</td><td class="m">1.13</td><td class="m">26.59</td></tr>
+        <tr><th scope="row" class="name">Action jerk</th><td class="m">0.043</td><td class="m">0.038</td><td class="m">0.353</td></tr>
+        <tr><th scope="row" class="name">Path efficiency</th><td class="m">0.534</td><td class="m">0.469</td><td class="m">0.219</td></tr>
+        <tr><th scope="row" class="name">Grasp timing (fraction through episode)</th><td class="m">0.70</td><td class="m">0.76</td><td class="m">0.15</td></tr>
+      </table>
+    </div>
+
+    <div class="call quiet"><b>26.59 gripper transitions.</b> A human closes the gripper once, decisively, about 70% of the way through the episode. The RL agent opens and closes it twenty-six times, starting at 15%. A policy trained on that learns to fidget, because fidgeting is what the demonstrations show. <b>Caveat:</b> this is a raw per-episode count and MG's episodes are three times longer than PH's, so part of the gap is length. Normalised per 50 frames it is still roughly an order of magnitude, but the unnormalised figure overstates it.</div>
+  </section>
+
+  <section>
+    <h2>3 · Diagnosis — where the best policy breaks</h2>
+    <p class="body">Progress is a scalar, which is enough to rank and not enough to act on. Decomposing the task into <b>reach → grasp → lift → place</b> and conditioning each stage on the one before it turns the score into a funnel, and the funnel has one obvious constriction.</p>
+
+    <p class="q" style="margin-top:22px">PH policy — stage funnel over the 100-scene run, each stage conditioned on the previous</p>
+    <div class="ladder">
+      <div class="st"><div class="lb2">Reach</div><div class="tr"><div class="fl" style="width:91%"></div></div><div class="vl">.91</div></div>
+      <div class="st gate"><div class="lb2">Grasp | reach</div><div class="tr"><div class="fl" style="width:25%"></div></div><div class="vl">.25</div></div>
+      <div class="st"><div class="lb2">Lift | grasp</div><div class="tr"><div class="fl" style="width:100%"></div></div><div class="vl">1.0</div></div>
+      <div class="st"><div class="lb2">Place | lift</div><div class="tr"><div class="fl" style="width:65%"></div></div><div class="vl">.65</div></div>
+    </div>
+
+    <p class="body">Reaching is largely solved. Lifting, once the object is held, is <b>free</b> — it never fails. Everything the policy cannot do lives in one transition: closing the fingers on an object it has already reached. If grasping succeeded every time it were attempted, the funnel implies an upper bound of <b>0.564 success against the observed 0.150</b>. That is a ceiling on this decomposition, not a forecast of what any fix would deliver — the actual fix found in <a href="#recipe">§5</a> recovered a fraction of it.</p>
+
+    <h3>What separates a failed episode from a successful one</h3>
+    <p class="body">Six behaviours survive a Benjamini–Hochberg correction across the tested family. The five the source report tabulates are below; the sixth, the fraction of the episode spent with the gripper closed, points the same way. Effect sizes are standardised.</p>
+
+    <div class="tbl">
+      <table>
+        <caption class="vh">Behavioural differences between failed and successful episodes</caption>
+        <thead>
+        <tr><th scope="col">Behaviour</th><th scope="col">Failures</th><th scope="col">Successes</th><th scope="col">Effect</th><th scope="col">p</th></tr>
+        </thead>
+        <tr><th scope="row" class="name">Path efficiency</th><td class="m">0.291</td><td class="m">0.463</td><td class="m">−0.94</td><td class="m">&lt;0.0001</td></tr>
+        <tr><th scope="row" class="name">Closest approach (m) <sup>c</sup></th><td class="m">0.047</td><td class="m">0.016</td><td class="m">+0.82</td><td class="m">&lt;0.0001</td></tr>
+        <tr><th scope="row" class="name">Approach completion <sup>c</sup></th><td class="m">0.777</td><td class="m">0.925</td><td class="m">−0.81</td><td class="m">&lt;0.0001</td></tr>
+        <tr><th scope="row" class="name">Gripper switching rate</th><td class="m">0.424</td><td class="m">0.376</td><td class="m">+0.52</td><td class="m">0.0014</td></tr>
+        <tr><th scope="row" class="name">Action jerk</th><td class="m">0.340</td><td class="m">0.332</td><td class="m">+0.36</td><td class="m">0.0264</td></tr>
+      </table>
+    </div>
+
+    <p class="body">The physical version of that table: <b>failures stall 4.7 cm short of the cube; successes get to 1.6 cm.</b> The policy is not confused about where the object is — it stops three centimetres too early and closes on nothing.</p>
+    <p class="body"><sup>c</sup> <b>Confirmatory only.</b> Closest approach and approach completion are downstream of success — an episode that succeeds must have got close — so they describe what failure looks like and cannot be prescribed on without circularity. Only path efficiency carries independent validation as a selection criterion (odds ratio 5.42, interval 2.49 – 11.81).</p>
+
+    <p class="body" style="font-size:13.5px;color:var(--dimmer)"><b>Note on two sets of transition rates.</b> The funnel above is measured over the 100-scene run; the per-corpus table in <a href="#hardening">§4</a> comes from the separate cross-dataset pass and reports somewhat different values for the same transitions (reach .91 vs 0.97, place-given-lift .65 vs 0.40). They are different estimates of the same quantities on different rollout sets, and the study does not reconcile them. Both are shown rather than silently picking the flattering one.</p>
+  </section>
+
+  <section id="hardening">
+    <h2>4 · Hardening — why the obvious prescription was wrong</h2>
+    <p class="body">Read from the PH policy alone, the diagnosis writes its own fix: grasping is the bottleneck, so <b>go collect grasp demonstrations</b>. That recommendation would probably have been wrong, and it took a second dataset to find out.</p>
+
+    <div class="tbl">
+      <table>
+        <caption class="vh">Conditioned transition rates by corpus, cross-dataset pass</caption>
+        <thead>
+        <tr><th scope="col">Transition</th><th scope="col">PH</th><th scope="col">MH</th><th scope="col">MG</th><th scope="col">Reading</th></tr>
+        </thead>
+        <tr><th scope="row" class="name">Reach</th><td class="m">0.97</td><td class="m">0.73</td><td class="m">0.17</td><td>tracks the data</td></tr>
+        <tr><th scope="row" class="name">Grasp | reach</th><td class="m">0.17</td><td class="m">0.14</td><td class="m">0.00</td><td><b style="color:var(--text)">no detectable difference</b></td></tr>
+        <tr><th scope="row" class="name">Lift | grasp</th><td class="m">1.00</td><td class="m">1.00</td><td class="m">0.00</td><td>tracks the data</td></tr>
+        <tr><th scope="row" class="name">Place | lift</th><td class="m">0.40</td><td class="m">0.67</td><td class="m">0.00</td><td>tracks the data</td></tr>
+      </table>
+    </div>
+
+    <p class="body">Reaching tracks the data source cleanly — better demonstrations, better reaching. Grasping does not. Two corpora with <b>100% successful demonstrations</b>, recorded by different people to different standards, give grasp rates of 0.17 and 0.14, and at this sample size that difference is not resolvable (difference +0.04, interval −0.18 to +0.23, p = 0.73).</p>
+
+    <div class="call">
+      <b>The rule this produced — stated as strongly as the evidence allows.</b> A bottleneck that clearly moves with the data source is a data problem. A bottleneck where <i>no</i> difference is detectable across good corpora is a candidate <b>recipe</b> problem, and worth testing as one before spending a collection budget. That is a failure to detect a difference, not proof the corpora are equivalent — the point estimates still differ by a factor of 1.2 and n = 100 per arm cannot resolve rates this low. What makes the reading credible here is that the recipe fix in <a href="#recipe">§5</a> then worked.
+    </div>
+  </section>
+
+  <section id="recipe">
+    <h2>5 · The free fix</h2>
+    <p class="body">If the grasp failure is in the recipe, it should be reachable without retraining. It was. Executing <b>four actions per inference call instead of eight</b> — the policy re-plans twice as often as it acts on stale predictions — moved the grasp rate from 23% to 32% and progress from 34.83 to <b>40.71, +5.9 points</b>.</p>
+    <div class="call quiet">No new data, no new training, no new model — one inference-time parameter. Two honest qualifications: the 40.71 arm was scored on <b>50 scenes against the baseline's 100</b>, and four was <b>selected from a sweep</b> over action-step counts, so it is the best value found rather than an independently confirmed one. No interval is reported on the +5.9 in the source, which by this site's own standard it should be.</div>
+  </section>
+
+  <section id="curation">
+    <h2>6 · Testing the prescription</h2>
+    <p class="body">A dataset grade is only worth something if acting on it works. So the screen was run forward — but with <b>one</b> of its properties, not all six. Selection used the only criterion with independent validation, path efficiency, penalised by action jerk: <span style="font-family:var(--mono);font-size:13px">score = z(path efficiency) − 0.5 × z(action jerk)</span>. The top-scoring MH demonstrations were added to PH and compared against a random draw of the same frame count.</p>
+
+    <div class="tbl">
+      <table>
+        <caption class="vh">Curation experiment arms</caption>
+        <thead>
+        <tr><th scope="col">Arm</th><th scope="col">Composition</th><th scope="col">Frames</th><th scope="col">Corpus path efficiency</th></tr>
+        </thead>
+        <tr><th scope="row" class="name">Targeted</th><td>PH 200 + MH top-107 by the composite score</td><td class="m">19,535</td><td class="m">0.553</td></tr>
+        <tr><th scope="row" class="name">Control</th><td>PH 200 + MH random 98</td><td class="m">19,530</td><td class="m">0.499</td></tr>
+        <tr><th scope="row" class="name">Baseline</th><td>PH 200 only — no curation at all</td><td class="m">9,666</td><td class="m">0.534</td></tr>
+      </table>
+    </div>
+
+    <p class="body">All arms anneal 50 additional steps from the same PH@500 checkpoint at the four-action inference setting, and the two curated corpora are frame-matched to 0.03%.</p>
+
+    <div class="tbl">
+      <table>
+        <caption class="vh">Curation results, 20 paired scenes</caption>
+        <thead>
+        <tr><th scope="col">Measure</th><th scope="col">Targeted</th><th scope="col">Control</th><th scope="col">Baseline</th><th scope="col">Targeted − control</th></tr>
+        </thead>
+        <tr><th scope="row" class="name">Mean progress</th><td class="m">43.83</td><td class="m">32.93</td><td class="m">40.71</td><td class="m">+10.89</td></tr>
+        <tr><th scope="row" class="name">Grasp rate</th><td class="m">35.0%</td><td class="m">25.0%</td><td class="m">32.0%</td><td class="m">+10.0</td></tr>
+        <tr><th scope="row" class="name">Success rate</th><td class="m">15.0%</td><td class="m">10.0%</td><td class="m">14.0%</td><td class="m">+5.0</td></tr>
+        <tr><th scope="row" class="name">Scenes won</th><td class="m">14</td><td class="m">6</td><td class="m">—</td><td class="m">70%</td></tr>
+      </table>
+    </div>
+
+    <div class="call">
+      <b>The baseline column is the one to read, and it is not flattering.</b> Against doing no curation at all, targeted selection gains <b>+3.12</b> progress, +3.0 grasp and +1.0 success — not the +10.89 headline. Most of the gap against the control is the control <b>falling 7.78 points below the baseline</b>: adding 98 unscreened demonstrations to a good corpus made it worse, despite doubling the frame count. The defensible claim from this experiment is "unscreened additions can hurt", which is useful; "screened additions help a lot" is not established.
+    </div>
+
+    <div class="call quiet">
+      <b>And it is not significant.</b> The 95% interval on the +10.89 difference runs from <b>−7.53 to +28.94</b> at n = 20 scenes. This study has already watched one small-sample direction evaporate — spatial coverage read +0.578 at n = 30 and −0.021 at n = 100. A 14-to-6 split at n = 20 is not yet distinguishable from that pattern. It is a direction worth more rollouts, and that is the whole claim.
+    </div>
+  </section>
+
+  <section>
+    <h2>7 · What it amounts to — the screen</h2>
+    <p class="body">The point of grading a dataset is to be able to reject one before paying to train on it. These six properties are computable from the raw corpus on a laptop. Thresholds are set from the measured behaviour of a corpus that works.</p>
+
+    <div class="tbl">
+      <table>
+        <caption class="vh">Demonstration acceptance thresholds</caption>
+        <thead>
+        <tr><th scope="col">Property</th><th scope="col">Accept if</th><th scope="col">Why that line</th></tr>
+        </thead>
+        <tr><th scope="row" class="name">Task accomplishment</th><td class="m">≥ 0.95</td><td>MG at 0.25 trained to near the random floor</td></tr>
+        <tr><th scope="row" class="name">Gripper transitions</th><td class="m">≤ 2</td><td>One decisive close; MG averages 26.6 (length-normalise before applying)</td></tr>
+        <tr><th scope="row" class="name">Path efficiency</th><td class="m">≥ 0.45</td><td>Odds ratio 5.42, interval 2.49 – 11.81 — the only independently validated line</td></tr>
+        <tr><th scope="row" class="name">Action jerk</th><td class="m">≤ 0.10</td><td>MG's corpus jerk is 0.353</td></tr>
+        <tr><th scope="row" class="name">Grasp timing</th><td class="m">≥ 0.50</td><td>Close on arrival, not at 15% of the episode</td></tr>
+        <tr><th scope="row" class="name">Episode length</th><td class="m">≤ 80 frames</td><td>Decisive, not wandering — <b>but see the false reject below</b></td></tr>
+      </table>
+    </div>
+
+    <div class="call">
+      <b>Applied to these three corpora, the screen is right about MG and wrong about MH.</b> It rejects MG on <b>all six</b> properties and passes PH on all six. MH passes five and is <b>rejected by the ≤ 80-frame rule</b> at a median of 96 — yet MH trained to 24.20, the second-best policy here. That is a false reject on the second-best corpus, and it is the strongest evidence on this page that the length threshold is mis-set.
+    </div>
+
+    <p class="body">The screen was also <b>calibrated on these same three corpora</b>, so its agreement with them is a consistency check rather than a prediction. Whether it holds on a corpus it was not built from is untested — and that test, not the thresholds themselves, is what would make this a product.</p>
+  </section>
+
+  <section>
+    <h2>8 · Negative results</h2>
+    <p class="body">Reported because they cost real compute and would otherwise be repeated:</p>
+    <ul class="body">
+      <li><b>Longer training was worse, not better.</b> On PH the learning curve peaks at 500 steps (42.80) and <b>falls to 29.37 by 1,000</b> — the model overfits a 9,666-frame corpus well before the nominal budget ends. This is why the headline scores use the best checkpoint per corpus rather than the final one, and why 500 steps is the configuration the study recommends.</li>
+      <li><b>Spatial coverage does not predict anything.</b> Where the cube started in a demonstration read +0.578 at n = 30 and <b>−0.021 at n = 100</b>. Collecting demonstrations to "cover the workspace" is not supported here — and the reversal is a standing warning about small-n directions on this page.</li>
+      <li><b>Subsetting an existing corpus made it worse.</b> Curating down to a higher-quality subset of the data already in hand scored 37.58 against 40.71 for leaving it alone. Selection helps when it <i>adds</i> screened demonstrations; discarding frames costs more than the quality gains.</li>
+      <li><b>The first version of this benchmark measured nothing.</b> It scored conformance rather than closed-loop capability and returned noise across every data mix. It was discarded and rebuilt on real rollouts. The published numbers are all from the rebuild.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>What's next</h2>
+    <div class="grid">
+      <div class="card">
+        <div class="big">1</div>
+        <h3>More than one task</h3>
+        <p>Everything here is Lift. Whether the six acceptance thresholds transfer to a task with a different failure mode is untested — and the MH false reject says at least one threshold is already wrong on this one.</p>
+      </div>
+      <div class="card">
+        <div class="big">20</div>
+        <h3>Power for the curation test</h3>
+        <p>The forward test is the only claim that matters commercially and it is the weakest evidence on the page. It needs to run at a sample size where the interval can exclude zero.</p>
+      </div>
+      <div class="card">
+        <div class="big">3B</div>
+        <h3>A second reference model</h3>
+        <p>One model was used to score every corpus. A grade that only holds for GR00T N1.7 is a property of the model, not of the data.</p>
+      </div>
+    </div>
+    <a class="cta" href="methodology-datasets.html">How we grade a dataset →</a>
+  </section>
+
+  <footer>
+    <b>RoboBench</b> · the datasets benchmark grades training corpora, not policies. Simulation only; no claim is made about real-robot transfer. Every number here comes from logged, per-episode rollouts.
+    <div class="meta">
+      TASK &nbsp;RoboMimic Lift · robosuite · staged physics progress (reach 0–30, grasp 60, lift 60–100)<br>
+      MODEL &nbsp;GR00T N1.7-3B · identical recipe, 1,000-step run, best checkpoint per corpus (PH 500 · MH 250 · MG 500)<br>
+      DATA &nbsp;PH 9,666 · MH 9,698 · MG 9,750 frames — matched to 0.9%<br>
+      RUNS &nbsp;~1,340 scored rollouts · 39 evaluation records · 100 held-out scenes per corpus, 20 paired scenes for the curation A/B<br>
+      HW &nbsp;&nbsp;&nbsp;single NVIDIA L4 24 GB<br>
+      SOURCE &nbsp;<a href="https://github.com/shaikzaidhaaris/vla-data-quality">github.com/shaikzaidhaaris/vla-data-quality</a> — full report, methodology, per-episode CSVs
+    </div>
+  </footer>
+
+</div>
+</body>
+</html>

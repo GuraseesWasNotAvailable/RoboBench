@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Models — RoboBench</title>
+<meta name="description" content="Every open-source vision-language-action policy on the same humanoid, the same tasks and an identical adaptation budget. Ranked, with error bars.">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div class="wrap">
+
+  <nav class="nav">
+    <a class="brand" href="index.html">RoboBench</a>
+    <a class="l" href="models.html" aria-current="page">Models</a>
+    <a class="l" href="datasets.html">Datasets</a>
+    <a class="l" href="methodology.html">How we benchmark</a>
+    <a class="l" href="about.html">What we do</a>
+  </nav>
+
+  <section class="hero">
+    <div class="kicker">Benchmark 01 · Policies · updated 27 Jul 2026</div>
+    <h1>Which policy?</h1>
+    <p class="standfirst">Every open-source robot policy, put in charge of the <b>same humanoid</b>, on the <b>same tasks</b>, with an <b>identical adaptation budget</b> for every pre-trained policy (20,000 steps; the from-scratch ACT control gets 60,000, since it starts from random weights) — scored from auditable simulated rollouts. One number, ranked, with error bars.</p>
+
+    <div class="master">
+      <div class="master-head">
+        <span class="master-title">Combined score — the G1 suite</span>
+        <span class="master-sub">mean placement progress across all three tasks · 0–100</span>
+      </div>
+
+      <div class="mbar-row">
+        <div class="mbar-label"><span class="swatch" style="background:var(--groot)"></span>GR00T N1.7 ⚑<sup>†</sup></div>
+        <div class="mbar-track">
+          <div class="mbar-fill" style="width:88.9%;background:var(--groot)"></div>
+          <div class="mbar-whisker" style="left:79.1%;width:19.5%"></div>
+        </div>
+        <div class="mbar-val">31.1<span class="mbar-ci">± 3.4</span></div>
+      </div>
+
+      <div class="mbar-row">
+        <div class="mbar-label"><span class="swatch" style="background:var(--act)"></span>ACT</div>
+        <div class="mbar-track">
+          <div class="mbar-fill" style="width:36.0%;background:var(--act)"></div>
+          <div class="mbar-whisker" style="left:32.0%;width:7.9%"></div>
+        </div>
+        <div class="mbar-val">12.6<span class="mbar-ci">± 1.4</span></div>
+      </div>
+
+      <div class="mbar-row">
+        <div class="mbar-label"><span class="swatch" style="background:var(--g2)"></span>WALL-OSS<sup>†</sup></div>
+        <div class="mbar-track">
+          <div class="mbar-fill" style="width:34.3%;background:var(--g2)"></div>
+          <div class="mbar-whisker" style="left:29.8%;width:9.1%"></div>
+        </div>
+        <div class="mbar-val">12.0<span class="mbar-ci">± 1.6</span></div>
+      </div>
+
+      <div class="mbar-row">
+        <div class="mbar-label"><span class="swatch" style="background:var(--g3)"></span>π0.5</div>
+        <div class="mbar-track">
+          <div class="mbar-fill" style="width:30.0%;background:var(--g3)"></div>
+          <div class="mbar-whisker" style="left:26.2%;width:7.5%"></div>
+        </div>
+        <div class="mbar-val">10.5<span class="mbar-ci">± 1.3</span></div>
+      </div>
+
+      <div class="mbar-row">
+        <div class="mbar-label"><span class="swatch" style="background:var(--g1)"></span>SmolVLA</div>
+        <div class="mbar-track">
+          <div class="mbar-fill" style="width:29.4%;background:var(--g1)"></div>
+          <div class="mbar-whisker" style="left:25.3%;width:8.2%"></div>
+        </div>
+        <div class="mbar-val">10.3<span class="mbar-ci">± 1.4</span></div>
+      </div>
+
+      <div class="master-divider">Pick-and-place only · full-suite score pending</div>
+
+      <div class="mbar-row provisional">
+        <div class="mbar-label"><span class="swatch" style="background:var(--g4)"></span>OpenVLA-OFT</div>
+        <div class="mbar-track">
+          <div class="mbar-fill prov" style="width:64.6%;background-color:var(--g4)"></div>
+          <div class="mbar-whisker" style="left:51.7%;width:25.7%"></div>
+        </div>
+        <div class="mbar-val">22.6<span class="mbar-ci">± 4.5</span></div>
+      </div>
+
+      <div class="mbar-row provisional">
+        <div class="mbar-label"><span class="swatch" style="background:var(--g5)"></span>RDT-1B</div>
+        <div class="mbar-track">
+          <div class="mbar-fill prov" style="width:59.7%;background-color:var(--g5)"></div>
+          <div class="mbar-whisker" style="left:46.6%;width:26.3%"></div>
+        </div>
+        <div class="mbar-val">20.9<span class="mbar-ci">± 4.6</span></div>
+      </div>
+
+      <p class="master-note"><b style="color:var(--dim)">Combined</b> = the mean of a policy's pick-and-place, stack and cylinder scores (each 0–100 placement progress, equal weight). The five <b style="color:var(--dim)">solid</b> bars ran all three tasks, each at an equal per-task horizon; <b style="color:var(--dim)">ACT, the 52M from-scratch control, is tied with WALL-OSS for second overall</b>, and no general VLA except GR00T clears it. The two <b style="color:var(--dim)">hatched</b> bars below the divider are pick-and-place only — one comparatively easy task, <b style="color:var(--dim)">not</b> a combined score — so expect them to drop once they face stacking, where every policy but GR00T scores ~0. OpenVLA-OFT and RDT-1B have not yet been run on stack or cylinder. <sup>†</sup> GR00T and WALL-OSS include a partial-checkpoint cylinder score (6k / 10k of 20k steps).</p>
+    </div>
+
+    <p class="detail-label">Per-task detail</p>
+
+    <div class="tabs" role="tablist">
+      <button class="tab active" data-task="redblock" role="tab" aria-selected="true">Pick-and-place</button>
+      <button class="tab" data-task="stack" role="tab" aria-selected="false">Stack</button>
+      <button class="tab" data-task="cylinder" role="tab" aria-selected="false">Cylinder</button>
+    </div>
+
+    <div class="tab-panel active" data-panel="redblock">
+    <div class="lb">
+      <table>
+        <tr>
+          <th>#</th><th>Model</th><th>Params</th><th>Score</th><th>τ50</th>
+          <th>Success</th><th>Speed</th><th>Episodes</th>
+        </tr>
+
+        <!-- ═══ ADD A MODEL: copy one <tr> block, edit values, keep rows in score order ═══ -->
+        <tr class="lead">
+          <td class="rk">1</td>
+          <td class="nm"><span class="swatch" style="background:var(--groot)"></span>GR00T N1.7 ⚑<i>NVIDIA · humanoid-native</i></td>
+          <td class="m">3B</td>
+          <td class="m"><span class="sc">36.2</span><br><span class="ci">± 4.3</span></td>
+          <td class="m">3.93</td><td class="m">4.0%</td><td class="m">19.8/s</td><td class="m">150</td>
+        </tr>
+        <tr>
+          <td class="rk">—</td>
+          <td class="nm"><span class="swatch" style="background:var(--act)"></span>ACT<i>control · no pre-training</i></td>
+          <td class="m">52M</td>
+          <td class="m"><span class="sc">25.6</span><br><span class="ci">± 3.2</span></td>
+          <td class="m">4.44</td><td class="m">1.3%</td><td class="m">29.3/s</td><td class="m">150</td>
+        </tr>
+        <tr>
+          <td class="rk">=2</td>
+          <td class="nm"><span class="swatch" style="background:var(--g1)"></span>SmolVLA<i>Hugging Face</i></td>
+          <td class="m">450M</td>
+          <td class="m"><span class="sc">23.9</span><br><span class="ci">± 2.9</span></td>
+          <td class="m">4.68</td><td class="m">0%</td><td class="m">18.4/s</td><td class="m">150</td>
+        </tr>
+        <tr>
+          <td class="rk">=2</td>
+          <td class="nm"><span class="swatch" style="background:var(--g2)"></span>WALL-OSS<i>X Square Robot</i></td>
+          <td class="m">~4B</td>
+          <td class="m"><span class="sc">23.7</span><br><span class="ci">± 3.0</span></td>
+          <td class="m">4.78</td><td class="m">0.7%</td><td class="m">15.1/s</td><td class="m">150</td>
+        </tr>
+        <tr>
+          <td class="rk">=2</td>
+          <td class="nm"><span class="swatch" style="background:var(--g3)"></span>π0.5<i>Physical Intelligence</i></td>
+          <td class="m">4.1B</td>
+          <td class="m"><span class="sc">22.9</span><br><span class="ci">± 2.8</span></td>
+          <td class="m">4.77</td><td class="m">0%</td><td class="m">22.3/s</td><td class="m">150</td>
+        </tr>
+        <tr>
+          <td class="rk">=2</td>
+          <td class="nm"><span class="swatch" style="background:var(--g4)"></span>OpenVLA-OFT<i>Stanford · fine-tuned</i></td>
+          <td class="m">7B</td>
+          <td class="m"><span class="sc">22.6</span><br><span class="ci">± 4.5</span></td>
+          <td class="m">4.74</td><td class="m">0%</td><td class="m">14.9/s</td><td class="m">50</td>
+        </tr>
+        <tr>
+          <td class="rk">=2</td>
+          <td class="nm"><span class="swatch" style="background:var(--g5)"></span>RDT-1B<i>Tsinghua · diffusion, bimanual</i></td>
+          <td class="m">1.2B</td>
+          <td class="m"><span class="sc">20.9</span><br><span class="ci">± 4.6</span></td>
+          <td class="m">4.98</td><td class="m">0%</td><td class="m">16.3/s</td><td class="m">50</td>
+        </tr>
+        <!-- ═══ END MODEL ROWS ═══ -->
+      </table>
+    </div>
+
+    <p class="tie" style="margin-top:14px">Five models share rank 2 — their margins overlap almost entirely, so ranking them would report noise as a result. <a href="methodology.html" style="color:var(--signal);text-decoration:none">How ties are decided →</a></p>
+    </div><!-- /panel redblock -->
+
+    <div class="tab-panel" data-panel="stack">
+      <p class="panel-sub">Stack — red, then yellow, then green. &nbsp;50 episodes each · 900-step horizon.</p>
+      <div class="lb">
+        <table>
+          <tr><th>#</th><th>Model</th><th>Params</th><th>Score</th><th>τ50</th><th>Success</th><th>Speed</th><th>Episodes</th></tr>
+          <tr class="lead">
+            <td class="rk">1</td>
+            <td class="nm"><span class="swatch" style="background:var(--groot)"></span>GR00T N1.7 ⚑<i>NVIDIA · humanoid-native</i></td>
+            <td class="m">3B</td>
+            <td class="m"><span class="sc">14.0</span><br><span class="ci">± 4.6</span></td>
+            <td class="m">9.00</td><td class="m">0%</td><td class="m">18.4/s</td><td class="m">50</td>
+          </tr>
+          <tr>
+            <td class="rk">=2</td>
+            <td class="nm"><span class="swatch" style="background:var(--g1)"></span>SmolVLA<i>Hugging Face</i></td>
+            <td class="m">450M</td>
+            <td class="m"><span class="sc">0.7</span><br><span class="ci">± 1.0</span></td>
+            <td class="m">11.0</td><td class="m">0%</td><td class="m">16.3/s</td><td class="m">50</td>
+          </tr>
+          <tr>
+            <td class="rk">—</td>
+            <td class="nm"><span class="swatch" style="background:var(--act)"></span>ACT<i>control · no pre-training</i></td>
+            <td class="m">52M</td>
+            <td class="m"><span class="sc">0.6</span><br><span class="ci">± 1.1</span></td>
+            <td class="m">11.0</td><td class="m">0%</td><td class="m">16.5/s</td><td class="m">50</td>
+          </tr>
+          <tr>
+            <td class="rk">=2</td>
+            <td class="nm"><span class="swatch" style="background:var(--g3)"></span>π0.5<i>Physical Intelligence</i></td>
+            <td class="m">4.1B</td>
+            <td class="m"><span class="sc">0.6</span><br><span class="ci">± 1.1</span></td>
+            <td class="m">11.0</td><td class="m">0%</td><td class="m">12.2/s</td><td class="m">50</td>
+          </tr>
+          <tr>
+            <td class="rk">=2</td>
+            <td class="nm"><span class="swatch" style="background:var(--g2)"></span>WALL-OSS<i>X Square Robot</i></td>
+            <td class="m">~4B</td>
+            <td class="m"><span class="sc">0.2</span><br><span class="ci">± 0.4</span></td>
+            <td class="m">11.0</td><td class="m">0%</td><td class="m">12.2/s</td><td class="m">50</td>
+          </tr>
+        </table>
+      </div>
+      <p class="tie" style="margin-top:14px">Only GR00T makes measurable progress — every other policy sits at the tolerance floor (τ50 = 11.0 is the grid maximum: the block never came close). Stacking is effectively unsolved.</p>
+    </div>
+
+    <div class="tab-panel" data-panel="cylinder">
+      <p class="panel-sub">Cylinder — place it in the basket. &nbsp;50 episodes each · 900-step horizon.</p>
+      <div class="lb">
+        <table>
+          <tr><th>#</th><th>Model</th><th>Params</th><th>Score</th><th>τ50</th><th>Success</th><th>Speed</th><th>Episodes</th></tr>
+          <tr class="lead">
+            <td class="rk">1</td>
+            <td class="nm"><span class="swatch" style="background:var(--groot)"></span>GR00T N1.7 ⚑<i>NVIDIA · humanoid-native</i></td>
+            <td class="m">3B</td>
+            <td class="m"><span class="sc">43.2</span><br><span class="ci">± 8.1</span></td>
+            <td class="m">1.93</td><td class="m">4.0%</td><td class="m">18.9/s</td><td class="m">50 <sup>†</sup></td>
+          </tr>
+          <tr>
+            <td class="rk">=2</td>
+            <td class="nm"><span class="swatch" style="background:var(--g2)"></span>WALL-OSS<i>X Square Robot</i></td>
+            <td class="m">~4B</td>
+            <td class="m"><span class="sc">12.1</span><br><span class="ci">± 3.7</span></td>
+            <td class="m">2.48</td><td class="m">0%</td><td class="m">14.7/s</td><td class="m">50 <sup>†</sup></td>
+          </tr>
+          <tr>
+            <td class="rk">—</td>
+            <td class="nm"><span class="swatch" style="background:var(--act)"></span>ACT<i>control · no pre-training</i></td>
+            <td class="m">52M</td>
+            <td class="m"><span class="sc">11.6</span><br><span class="ci">± 2.4</span></td>
+            <td class="m">2.50</td><td class="m">0%</td><td class="m">16.1/s</td><td class="m">50</td>
+          </tr>
+          <tr>
+            <td class="rk">=2</td>
+            <td class="nm"><span class="swatch" style="background:var(--g3)"></span>π0.5<i>Physical Intelligence</i></td>
+            <td class="m">4.1B</td>
+            <td class="m"><span class="sc">8.0</span><br><span class="ci">± 2.6</span></td>
+            <td class="m">2.76</td><td class="m">0%</td><td class="m">14.9/s</td><td class="m">50</td>
+          </tr>
+          <tr>
+            <td class="rk">=2</td>
+            <td class="nm"><span class="swatch" style="background:var(--g1)"></span>SmolVLA<i>Hugging Face</i></td>
+            <td class="m">450M</td>
+            <td class="m"><span class="sc">6.3</span><br><span class="ci">± 3.0</span></td>
+            <td class="m">2.78</td><td class="m">0%</td><td class="m">16.7/s</td><td class="m">50</td>
+          </tr>
+        </table>
+      </div>
+      <p class="tie" style="margin-top:14px">GR00T clears the field with the <b>first non-zero success on either of the two new tasks</b> — it places the cylinder in 4% of episodes, invisible at the shorter horizon. WALL-OSS and the ACT control are tied just behind (12.1 vs 11.6, margins overlap). <sup>†</sup> GR00T and WALL-OSS use <b>partial checkpoints</b> (6k and 10k of 20k steps — a disk fault cut training short); both were re-run at the standard 900-step horizon, so treat those two as provisional on training-steps, not horizon.</p>
+    </div>
+
+    <p class="scorekey"><b>Score</b> = placement progress, 0–100, how much of the block's distance to the target was closed (100 = placed). <b>τ50</b> = target tolerance a policy hits half the time, lower is better. <b>±</b> = 95% margin. <a href="methodology.html">Full scoring rule →</a></p>
+
+    <div class="call">
+      <b>⚑ GR00T has a home advantage.</b> It is the only entrant pre-trained on humanoids of this shape, so its lead means "best for this body", not "best in general". <b>ACT is the control</b>, not a contestant: 52M parameters, no pre-training at all, learning only from this task's 216 demonstrations. It is listed to show what the pre-trained models have to beat — and <b>not one of the five general VLAs does</b>. Only GR00T, pre-trained on this body, clears the from-scratch bar.
+    </div>
+
+    <div class="call quiet"><b>The pattern holds across all three tasks.</b> GR00T leads every board and is the only policy to place anything — a 4% cylinder success, the suite's first. The 52M from-scratch control (ACT) still matches or beats every general VLA on pick-and-place and stack, and is edged only by WALL-OSS on cylinder, within error. Pre-training on internet-scale robot data has yet to clearly beat a from-scratch baseline on this humanoid — only pre-training on <i>this body</i> does.</div>
+
+    <div class="call quiet"><b>And the models may not be the interesting variable.</b> Five architectures separated by billions of parameters land inside each other's error bars at a fixed adaptation budget. That is a result about this suite, not a general law — but it is the reason we also grade the other input. The <a href="datasets.html" style="color:var(--signal);text-decoration:none">datasets benchmark</a> freezes the policy and varies the data instead; its numbers come from a different robot and task, so the two are not on one scale.</div>
+
+    <a class="cta" href="report.html">Read the full phase-0b report →</a>
+  </section>
+
+  <section id="benchmarks">
+    <h2>Model benchmarks</h2>
+    <p class="lede">Each benchmark asks a different question, on a different embodiment, with its <b>own protocol, grading rubric, and report</b>. The leaderboard above is the flagship G1 suite; the full set:</p>
+
+    <div class="grid" style="margin-top:26px">
+      <div class="card" style="border-top:3px solid var(--groot)">
+        <div style="font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--dimmer)">Equal-adaptation · Unitree G1</div>
+        <h4 style="margin-top:6px">G1 pick-and-place</h4>
+        <p>Seven policies, one humanoid, three tasks, an identical fine-tuning budget — who adapts best to this body? ~1,350 rollouts, continuous placement scoring.</p>
+        <p style="font-family:var(--mono);font-size:12px;color:var(--text);margin-top:10px">Leader: GR00T N1.7 · 31.1 combined</p>
+        <div style="margin-top:14px;display:flex;gap:16px;font-size:13px;flex-wrap:wrap">
+          <a href="report.html" style="color:var(--signal);text-decoration:none">Report →</a>
+          <a href="diagnostics.html" style="color:var(--signal);text-decoration:none">Diagnostics →</a>
+          <a href="methodology.html" style="color:var(--signal);text-decoration:none">Rubric →</a>
+        </div>
+      </div>
+      <div class="card" style="border-top:3px solid var(--ok)">
+        <div style="font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--dimmer)">Zero-shot · WidowX / SimplerEnv</div>
+        <h4 style="margin-top:6px">Zero-shot WidowX</h4>
+        <p>Four policies, one WidowX arm, <b>no fine-tuning at all</b> — what can a shipped checkpoint do out of the box? 2,800 episodes across seven Bridge-style tasks.</p>
+        <p style="font-family:var(--mono);font-size:12px;color:var(--text);margin-top:10px">Leader: Octo-Base · 34.9%</p>
+        <div style="margin-top:14px;display:flex;gap:16px;font-size:13px">
+          <a href="report-widowx.html" style="color:var(--signal);text-decoration:none">Report →</a>
+          <a href="rubric-widowx.html" style="color:var(--signal);text-decoration:none">Rubric →</a>
+        </div>
+      </div>
+    </div>
+
+    <p class="tie" style="margin-top:16px">Scores are <b>not comparable across benchmarks</b> — different arms, tasks, and protocols. Each is ranked only within itself.</p>
+  </section>
+
+  <footer>
+    <b>RoboBench</b> is an independent benchmark. Results are simulation-only and carry no claim about real-robot transfer. Every score here comes from logged, per-episode rollouts.
+    <div class="meta">
+      TASK &nbsp;PickPlace-RedBlock · Stack-RgyBlock · PickPlace-Cylinder · Unitree G1 humanoid, 29 DoF, 2-finger grippers<br>
+      SIM &nbsp;&nbsp;NVIDIA Isaac Sim 5.1 · single NVIDIA L40S<br>
+      DATA &nbsp;216 demonstrations/task · 20,000 training steps per model (ACT 60,000, from scratch)<br>
+      RUNS &nbsp;50–150 episodes per cell · ~1,350 scored rollouts · 600-step horizon (pick-and-place) · 900-step (stack, cylinder)
+    </div>
+  </footer>
+
+</div>
+<script>
+(function(){
+  // ---- task tabs (progressive enhancement) ----
+  var tabs = Array.prototype.slice.call(document.querySelectorAll('.tab[data-task]'));
+  var panels = Array.prototype.slice.call(document.querySelectorAll('.tab-panel[data-panel]'));
+  if (tabs.length && panels.length) {
+    document.documentElement.classList.add('js-tabs');
+    tabs.forEach(function(t){
+      t.addEventListener('click', function(){
+        var task = t.getAttribute('data-task');
+        tabs.forEach(function(x){
+          var on = x === t;
+          x.classList.toggle('active', on);
+          x.setAttribute('aria-selected', on ? 'true' : 'false');
+        });
+        panels.forEach(function(p){
+          p.classList.toggle('active', p.getAttribute('data-panel') === task);
+        });
+      });
+    });
+  }
+  // ---- score sparklines: bar length proportional to score within each task ----
+  Array.prototype.slice.call(document.querySelectorAll('.lb table')).forEach(function(tbl){
+    var scs = Array.prototype.slice.call(tbl.querySelectorAll('td .sc'));
+    var max = 0, items = [];
+    scs.forEach(function(sc){
+      var v = parseFloat(sc.textContent);
+      if (!isNaN(v)) { items.push([sc, v]); if (v > max) max = v; }
+    });
+    if (max <= 0) return;
+    items.forEach(function(pair){
+      var sc = pair[0], v = pair[1];
+      if (sc.parentNode.querySelector('.bar')) return;
+      var bar = document.createElement('span');
+      bar.className = 'bar';
+      bar.style.width = Math.max(2, Math.round(v / max * 100)) + 'px';
+      var br = sc.nextElementSibling;                     // the <br> after the score
+      if (br && br.tagName === 'BR') br.parentNode.insertBefore(bar, br.nextSibling);
+      else sc.parentNode.appendChild(bar);
+    });
+  });
+})();
+</script>
+</body>
+</html>
